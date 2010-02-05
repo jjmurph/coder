@@ -4,6 +4,10 @@ import sys
 import gtk
 import os
 
+class Tab:
+    def __init__(self):
+       pass 
+
 class TextEditor:
     def __init__(self):
         builder = gtk.Builder()
@@ -12,8 +16,6 @@ class TextEditor:
         #gtk objects from glade
         self.window = builder.get_object("window")
         self.notebook = builder.get_object("notebook")
-        #self.textview = builder.get_object("textview")
-        #self.buffer = self.textview.get_buffer()
 
         #link the signal handlers
         builder.connect_signals(self)
@@ -29,11 +31,11 @@ class TextEditor:
         gtk.main_quit()
         
     def on_menu_item_new_activate(self,widget,data=None):
-        #self.buffer.set_text("Hello")
         self.new_tab()
     
     def on_menu_item_open_activate(self,widget,data=None):
-        self.load_file('/home/murph/coding/coder/glade/testfile.txt')
+        filename = os.getcwd() + os.sep + 'testfile.txt'
+        self.load_file(filename)
         
     ###########################
 
@@ -81,9 +83,14 @@ class TextEditor:
         except IOError as e:          
             print("Couldn't open file %s" % filename)
             
-    
+def init():
+    cur_dir = os.curdir
+    cwd = os.getcwd()
+    #print "cur_dir = " + cur_dir
+    #print "cwd = " + cwd
             
 if __name__ == "__main__":
+    init()
     editor = TextEditor()
     editor.window.show()
     gtk.main()
