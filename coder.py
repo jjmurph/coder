@@ -23,7 +23,8 @@ class TextEditor(object):
         #gtk objects from glade
         self.window = builder.get_object("window")
         self.notebook = builder.get_object("notebook")
-       
+        self.statusbar = builder.get_object("statusbar")
+
         scrolledwindow = builder.get_object("scrolledwindow")
         textview = builder.get_object("textview")
         #label = builder.get_object("label")
@@ -50,8 +51,8 @@ class TextEditor(object):
     ##### signal handlers #####
 
     def on_window_destroy(self,widget,data=None):
-        gtk.main_quit()
-        
+        self.quit()
+
     def on_menu_item_new_activate(self,widget,data=None):
         self.new_tab()
     
@@ -63,35 +64,61 @@ class TextEditor(object):
                                    gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
         response = file_chooser.run()
         if response == gtk.RESPONSE_ACCEPT:
+            # if there are no open tabs then create one first
+            if not self.tabs:
+                self.new_tab()
             filename = file_chooser.get_filename()
             self.load_file(filename)
         file_chooser.destroy()
 
     def on_menu_item_save_activate(self,widget,data=None):
-        tab = self.current_tab()
-        filename = tab.get_filename()
-        self.save_file(filename)
+        if self.tabs:
+            tab = self.current_tab()
+            filename = tab.get_filename()
+            self.save_file(filename)
 
     def on_menu_item_save_as_activate(self,widget,data=None):
-        file_chooser = gtk.FileChooserDialog(
-                        title = 'Save as',
-                        action = gtk.FILE_CHOOSER_ACTION_SAVE,
-                        buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
-                                   gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
-        response = file_chooser.run()
-        if response == gtk.RESPONSE_ACCEPT:
-            filename = file_chooser.get_filename()
-            self.save_file(filename)
-        file_chooser.destroy()
+        if self.tabs:
+            file_chooser = gtk.FileChooserDialog(
+                            title = 'Save as',
+                            action = gtk.FILE_CHOOSER_ACTION_SAVE,
+                            buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+                                    gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+            response = file_chooser.run()
+            if response == gtk.RESPONSE_ACCEPT:
+                filename = file_chooser.get_filename()
+                self.save_file(filename)
+            file_chooser.destroy()
+
+    def on_menu_item_close_activate(self,widget,data=None):
+        self.close_tab()
+
+    def on_menu_item_quit_activate(self,widget,data=None):
+        self.quit()
+
+    def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
+        filename = ""
+        if self.tabs:
+            tab = self.tabs[new_page_num]
+            filename = tab.get_filename()
+        context_id = self.statusbar.get_context_id("filename")
+        self.statusbar.push(context_id,filename)
 
         
     ###########################
+
+
+    def quit(self):
+        gtk.main_quit()
 
     def current_page(self):
         return self.notebook.get_current_page()
 
     def current_tab(self):
-        return self.tabs[self.current_page()]
+        if self.tabs:
+            return self.tabs[self.current_page()]
+        else:
+            return -1
 
     def new_tab(self):
         tab = Tab(self.notebook)
@@ -120,7 +147,11 @@ class TextEditor(object):
           
             #update the filename and label of the tab
             tab.set_filename(filename)
-           
+            
+            #update the status bar
+            context_id = self.statusbar.get_context_id("filename")
+            self.statusbar.push(context_id,filename)
+
             print("Loaded %s" % filename)
         except IOError as e:          
             print("Couldn't open file %s" % filename)
@@ -149,13 +180,18 @@ class TextEditor(object):
                 #update the filename and label of the tab
                 tab.set_filename(filename)
 
+                #update the status bar
+                context_id = self.statusbar.get_context_id("filename")
+                self.statusbar.push(context_id,filename)
+
                 print("Saved %s" % filename)
             except IOError as e:
                 print("Error saving file %s" % filename)
 
     def close_tab(self):
-        self.notebook.remove_page(self.current_page())
-        self.tabs.remove(tab)
+        if self.tabs:
+            self.notebook.remove_page(self.current_page())
+            self.tabs.remove(self.current_tab())
 
 
 class Tab(object):
