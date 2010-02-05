@@ -3,7 +3,7 @@
 import sys
 import gtk
 import os
-
+import subprocess
 
 class TextEditor(object):
     '''
@@ -132,6 +132,21 @@ class TextEditor(object):
             textbuffer = textview.get_buffer()
             textbuffer.delete_selection(True,textview.get_editable())
 
+    ### tools menu signal handlers ###
+
+    def on_menu_item_run_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            filename = tab.get_filename()
+            if filename:
+                (basename,ext) = os.path.splitext(filename)
+                if os.path.exists(filename) and ext == '.py':
+                    try:
+                        command = 'python ' + filename
+                        subprocess.Popen('python ' + filename,shell=True)
+                    except OSError as e:
+                        print e
+    
     ### notebook signal handlers ###
 
     def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
