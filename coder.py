@@ -27,17 +27,22 @@ class TextEditor(object):
 
         scrolledwindow = builder.get_object("scrolledwindow")
         textview = builder.get_object("textview")
-        #label = builder.get_object("label")
-        # this should be in the Glade file
-        label = gtk.Label("New Document")
+        label = builder.get_object("notebook_label")
 
         #link the signal handlers
         builder.connect_signals(self)
-       
-        self.tabs = [] #list of all active tabs
+     
+        #set up a clipboard
+        self.clipboard = gtk.Clipboard()
+
+        #set up a list to keep track of all the active tabs
+        self.tabs = []
+
+        #build a Tab object for the first page of the notebook
         tab = Tab(self.notebook,scrolledwindow,textview,label)
         self.tabs.append(tab)
-    
+   
+        #load files from the command line if there were any
         if filenames:
             self.load_file(filenames[0])
             filenames = filenames[1:]
@@ -46,12 +51,13 @@ class TextEditor(object):
             for f in filenames:
                 self.new_tab()
                 self.load_file(f)
-
         
-    ##### signal handlers #####
+    ### window signal handlers ###
 
     def on_window_destroy(self,widget,data=None):
         self.quit()
+
+    ### file menu handlers ###
 
     def on_menu_item_new_activate(self,widget,data=None):
         self.new_tab()
@@ -96,6 +102,38 @@ class TextEditor(object):
     def on_menu_item_quit_activate(self,widget,data=None):
         self.quit()
 
+    ### edit menu signal handlers ###
+
+    def on_menu_item_cut_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            textview = tab.get_textview()
+            textbuffer = textview.get_buffer()
+            textbuffer.cut_clipboard(self.clipboard,textview.get_editable())
+
+    def on_menu_item_copy_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            textview = tab.get_textview()
+            textbuffer = textview.get_buffer()
+            textbuffer.copy_clipboard(self.clipboard)
+
+    def on_menu_item_paste_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            textview = tab.get_textview()
+            textbuffer = textview.get_buffer()
+            textbuffer.paste_clipboard(self.clipboard,None,textview.get_editable())
+
+    def on_menu_item_delete_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            textview = tab.get_textview()
+            textbuffer = textview.get_buffer()
+            textbuffer.delete_selection(True,textview.get_editable())
+
+    ### notebook signal handlers ###
+
     def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
         filename = ""
         if self.tabs:
@@ -106,7 +144,6 @@ class TextEditor(object):
 
         
     ###########################
-
 
     def quit(self):
         gtk.main_quit()
