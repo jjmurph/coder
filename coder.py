@@ -47,6 +47,7 @@ class TextEditor(object):
                 self.new_tab()
                 self.load_file(f)
 
+        
     ##### signal handlers #####
 
     def on_window_destroy(self,widget,data=None):
