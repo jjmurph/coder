@@ -93,7 +93,14 @@ class TextEditor(object):
             response = file_chooser.run()
             if response == gtk.RESPONSE_ACCEPT:
                 filename = file_chooser.get_filename()
-                self.save_file(filename)
+                ok_to_save = True
+                if os.path.exists(filename):
+                    current_filename = self.current_tab().get_filename()
+                    if current_filename != filename:
+                        if not self.ok_to_overwrite_file(filename):
+                            ok_to_save = False
+                if ok_to_save:
+                    self.save_file(filename)
             file_chooser.destroy()
 
     def on_menu_item_close_activate(self,widget,data=None):
@@ -218,8 +225,6 @@ class TextEditor(object):
 
             # get the full text in the buffer
             text = textbuffer.get_text(start,end)
-           
-            #TODO: check if file exists
 
             try:
                 f = open(filename,'w')
@@ -244,6 +249,19 @@ class TextEditor(object):
         if self.tabs:
             self.notebook.remove_page(self.current_page())
             self.tabs.remove(self.current_tab())
+
+    def ok_to_overwrite_file(self,filename):
+        dialog = gtk.MessageDialog(parent=self.window,
+                                  flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                                  type=gtk.MESSAGE_QUESTION,
+                                  buttons=gtk.BUTTONS_OK_CANCEL,
+                                  message_format="File exists. Overwrite?")
+        dialog_response = dialog.run()
+        ok_to_overwrite = False
+        if dialog_response == gtk.RESPONSE_OK:
+            ok_to_overwrite = True
+        dialog.destroy()
+        return ok_to_overwrite
 
 
 class Tab(object):
