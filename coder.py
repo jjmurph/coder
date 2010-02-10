@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import sys
-import gtk
 import os
+import gtk
+import gtksourceview2
 import subprocess
+
 
 class TextEditor(object):
     '''
@@ -28,6 +30,14 @@ class TextEditor(object):
         scrolledwindow = builder.get_object("scrolledwindow")
         textview = builder.get_object("textview")
         label = builder.get_object("notebook_label")
+        
+        #hide the tab widgets, we'll create our own
+        scrolledwindow.hide()
+        textview.hide()
+        label.hide()
+        
+        #remove the notebook tab that was created by glade
+        self.notebook.remove_page(0)
 
         #link the signal handlers
         builder.connect_signals(self)
@@ -39,8 +49,9 @@ class TextEditor(object):
         self.tabs = []
 
         #build a Tab object for the first page of the notebook
-        tab = Tab(self.notebook,scrolledwindow,textview,label)
-        self.tabs.append(tab)
+        #tab = Tab(self.notebook,scrolledwindow,textview,label)
+        #self.tabs.append(tab)
+        self.new_tab()
    
         #load files from the command line if there were any
         if filenames:
@@ -212,7 +223,7 @@ class TextEditor(object):
             self.statusbar.push(context_id,filename)
 
             print("Loaded %s" % filename)
-        except IOError as e:          
+        except IOError as e:
             print("Couldn't open file %s" % filename)
 
     def save_file(self,filename):
@@ -270,12 +281,17 @@ class Tab(object):
     that make up a tab in the Text Editor.
     '''
 
+    source_language_manager = gtksourceview2.language_manager_get_default()
+    langs = {'py':'python','glade':'xml','pl':'perl'}
+    
     def __init__(self,notebook,window=None,textview=None,label=None):
         '''
         The first tab is built by Glade, we just need to store the widgets.
         Subsequent tabs are built dynamically, only the notebook
         argument should be used for those.
         '''
+        #TODO: we should always be creating the widgets dynamically now
+        # the window, textview, and label params should be removed
 
         self.notebook = notebook
         self.filename = ""
@@ -296,8 +312,8 @@ class Tab(object):
         'Creates the Scrolled Window, Text View, and Label'
         self.window = gtk.ScrolledWindow()
         self.window.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
-        self.textview = gtk.TextView()
-        self.textbuffer = self.textview.get_buffer()
+        self.textbuffer = gtksourceview2.Buffer()
+        self.textview = gtksourceview2.View(self.textbuffer)
         self.window.add(self.textview)
         self.label = gtk.Label("New Document")        
     
@@ -314,10 +330,32 @@ class Tab(object):
         return self.filename
 
     def set_filename(self,filename):
-        'Sets the filename and updates the label'
+        '''
+        Set the filename, update the label,
+        and set the syntax hightlighting
+        '''
         self.filename = filename
         self.label.set_text(os.path.basename(filename))
         self.notebook.set_tab_label(self.window,self.label)
+        self.update_source_buffer(filename)
+
+    def update_source_buffer(self,filename):
+        'Set the syntax highlighting based on filename'
+        (basename,ext) = os.path.splitext(filename)
+        #strip off the "." from the extension
+        ext = ext[1:]
+        #get the lang_id from the extension, ex: 'py' -> 'python'
+        try:
+            lang_id = Tab.langs[ext]
+        except KeyError:
+            #if the extension isn't in the list of langs 
+            #then just use the extension, ex: 'c'
+            #if lang_id isn't a valid id, the language manager
+            #just ignores it
+            lang_id = ext
+        language = Tab.source_language_manager.get_language(lang_id)
+        self.textbuffer.set_language(language)
+    
 
 
 def main(filenames=[]):
