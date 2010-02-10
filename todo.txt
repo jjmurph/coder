@@ -1,0 +1,9 @@
+"save" should act as "save as" if there's no filename
+
+add keyboard shortcuts
+
+add find and replace
+
+check for changes before quitting
+
+mark the tab if the text has been modified
