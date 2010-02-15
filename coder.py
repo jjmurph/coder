@@ -298,6 +298,7 @@ class Tab(object):
 
         self.notebook = notebook
         self.filename = ""
+        self.changed = 0
 
         if window is None:
             self.create_widgets()
@@ -316,6 +317,7 @@ class Tab(object):
         self.window = gtk.ScrolledWindow()
         self.window.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
         self.textbuffer = gtksourceview2.Buffer()
+        self.textbuffer.connect('modified-changed',self.buffer_modified_changed)        
         self.textview = gtksourceview2.View(self.textbuffer)
         self.window.add(self.textview)
         self.label = gtk.Label("New Document")        
@@ -358,8 +360,23 @@ class Tab(object):
             lang_id = ext
         language = Tab.source_language_manager.get_language(lang_id)
         self.textbuffer.set_language(language)
-    
 
+    def buffer_modified_changed(self,widget):
+        print('modified-changed')
+        if self.changed:
+            self.changed = 0
+            if self.filename:
+                text = os.path.basename(self.filename)
+            else:
+                text = "New Document"
+            self.label.set_text(text)
+        else:
+            self.changed = 1
+            if self.filename:
+                text = os.path.basename(self.filename) + " *"
+            else:
+                text = "New Document *"
+            self.label.set_text(text)            
 
 def main(filenames=[]):
     '''
