@@ -92,7 +92,10 @@ class TextEditor(object):
         if self.tabs:
             tab = self.current_tab()
             filename = tab.get_filename()
-            self.save_file(filename)
+            if filename:
+                self.save_file(filename)
+            else:
+                self.on_menu_item_save_as_activate(widget,data)
 
     def on_menu_item_save_as_activate(self,widget,data=None):
         if self.tabs:

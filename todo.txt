@@ -1,5 +1,3 @@
-"save" should act as "save as" if there's no filename
-
 add find and replace
 
 check for changes before quitting
