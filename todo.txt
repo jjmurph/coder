@@ -1,5 +1,3 @@
 add find and replace
 
 check for changes before quitting
-
-mark the tab if the text has been modified
