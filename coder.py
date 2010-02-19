@@ -59,9 +59,10 @@ class TextEditor(object):
         #tab = Tab(self.notebook,scrolledwindow,textview,label)
         #self.tabs.append(tab)
         self.new_tab()
-   
+
         #load files from the command line if there were any
         if filenames:
+            self.only_first_tab = 0
             self.load_file(filenames[0])
             filenames = filenames[1:]
             # if there was more than 1 filename then
@@ -69,6 +70,10 @@ class TextEditor(object):
             for f in filenames:
                 self.new_tab()
                 self.load_file(f)
+        else:
+            #open works differently if there's only the original "New Document" tab
+            self.only_first_tab = 1
+
         
     ### window signal handlers ###
 
@@ -88,11 +93,18 @@ class TextEditor(object):
                                    gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
         response = file_chooser.run()
         if response == gtk.RESPONSE_ACCEPT:
-            # if there are no open tabs then create one first
+            #if there's only the original "New Document" tab
+            #then don't create a new tab, just replace the original
+            if not self.only_first_tab:
+                self.new_tab()
+            #if there are no open tabs at all then create one first
             if not self.tabs:
                 self.new_tab()
             filename = file_chooser.get_filename()
             self.load_file(filename)
+            #reset the flag to indicate that we no longer
+            #have just the original "New Document" tab
+            self.only_first_tab = 0
         file_chooser.destroy()
 
     def on_menu_item_save_activate(self,widget,data=None):
@@ -204,6 +216,9 @@ class TextEditor(object):
         tab = Tab(self.notebook)
         self.tabs.append(tab)
         self.notebook.set_current_page(len(self.tabs)-1)
+        #reset the flag to indicate that we no longer
+        #have just the original "New Document" tab
+        self.only_first_tab = 0
     
     def load_file(self,filename):
         try:
@@ -375,7 +390,6 @@ class Tab(object):
         self.textbuffer.set_language(language)
 
     def buffer_modified_changed(self,widget):
-        print('modified-changed')
         if self.changed:
             self.changed = 0
             if self.filename:
