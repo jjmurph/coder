@@ -178,6 +178,17 @@ class TextEditor(object):
             textbuffer = textview.get_buffer()
             textbuffer.delete_selection(True,textview.get_editable())
 
+    ### search menu signal handlers ###
+
+    def on_menu_item_find_activate(self,widget,data=None):
+        print('on_menu_item_find_activate')
+        
+    def on_menu_item_replace_activate(self,widget,data=None):
+        print('on_menu_item_replace_activate')
+
+    def on_menu_item_goto_activate(self,widget,data=None):
+        print('on_menu_item_goto_activate')
+        
     ### tools menu signal handlers ###
 
     def on_menu_item_run_activate(self,widget,data=None):
