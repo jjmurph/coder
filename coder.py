@@ -76,9 +76,15 @@ class TextEditor(object):
 
         
     ### window signal handlers ###
+    
+    def on_window_delete_event(self,widget,data=None):
+        self.quit()
+        #return True so the signal doesn't propagate up to gtk.Object.destroy
+        #and kill our window even if there are unsaved changes
+        return True
 
     def on_window_destroy(self,widget,data=None):
-        self.quit()
+        pass
 
     ### file menu handlers ###
 
@@ -201,7 +207,32 @@ class TextEditor(object):
     ###########################
 
     def quit(self):
-        gtk.main_quit()
+        changes = 0
+        quit = 0
+        for tab in self.tabs:
+            if tab.has_unsaved_changes():
+                changes = 1
+                break
+        if changes:
+            if self.ok_to_quit():
+                gtk.main_quit()
+            else:
+                return False
+        else:
+            gtk.main_quit()
+
+    def ok_to_quit(self):
+        dialog = gtk.MessageDialog(parent=self.window,
+                                  flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                                  type=gtk.MESSAGE_QUESTION,
+                                  buttons=gtk.BUTTONS_OK_CANCEL,
+                                  message_format="There are unsaved changes, are you sure you want to quit?")
+        dialog_response = dialog.run()
+        ok_to_quit = False
+        if dialog_response == gtk.RESPONSE_OK:
+            ok_to_quit = True
+        dialog.destroy()
+        return ok_to_quit
 
     def current_page(self):
         return self.notebook.get_current_page()
@@ -404,6 +435,9 @@ class Tab(object):
             else:
                 text = "New Document *"
             self.label.set_text(text)            
+    
+    def has_unsaved_changes(self):
+        return self.changed
 
 def main(filenames=[]):
     '''

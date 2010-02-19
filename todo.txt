@@ -1,3 +1,2 @@
 add find and replace
 
-check for changes before quitting
