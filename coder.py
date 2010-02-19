@@ -3,8 +3,15 @@
 import sys
 import os
 import gtk
-import gtksourceview2
 import subprocess
+
+# try to import gtksourceview2
+# if it doesn't exist then we'll just use a normal text view
+try:
+    import gtksourceview2
+    SOURCE_VIEW = 1
+except ImportError:
+    SOURCE_VIEW = 0
 
 
 class TextEditor(object):
@@ -284,8 +291,9 @@ class Tab(object):
     that make up a tab in the Text Editor.
     '''
 
-    source_language_manager = gtksourceview2.language_manager_get_default()
-    langs = {'py':'python','glade':'xml','pl':'perl'}
+    if SOURCE_VIEW:
+        source_language_manager = gtksourceview2.language_manager_get_default()
+        langs = {'py':'python','glade':'xml','pl':'perl'}
     
     def __init__(self,notebook,window=None,textview=None,label=None):
         '''
@@ -316,9 +324,13 @@ class Tab(object):
         'Creates the Scrolled Window, Text View, and Label'
         self.window = gtk.ScrolledWindow()
         self.window.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
-        self.textbuffer = gtksourceview2.Buffer()
+        if SOURCE_VIEW:
+            self.textbuffer = gtksourceview2.Buffer()
+            self.textview = gtksourceview2.View(self.textbuffer)
+        else:
+            self.textbuffer = gtk.TextBuffer()
+            self.textview = gtk.TextView(self.textbuffer)
         self.textbuffer.connect('modified-changed',self.buffer_modified_changed)        
-        self.textview = gtksourceview2.View(self.textbuffer)
         self.window.add(self.textview)
         self.label = gtk.Label("New Document")        
     
@@ -346,6 +358,7 @@ class Tab(object):
 
     def update_source_buffer(self,filename):
         'Set the syntax highlighting based on filename'
+        if not SOURCE_VIEW: return
         (basename,ext) = os.path.splitext(filename)
         #strip off the "." from the extension
         ext = ext[1:]
