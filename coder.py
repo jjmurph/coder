@@ -26,29 +26,38 @@ class TextEditor(object):
         Accepts an optional list of filenames to open
         '''
 
-        builder = gtk.Builder()
-        builder.add_from_file("coder.glade")
+        #builder = gtk.Builder()
+        #builder.add_from_file("coder.glade")
         
         #gtk objects from glade
-        self.window = builder.get_object("window")
-        self.notebook = builder.get_object("notebook")
-        self.statusbar = builder.get_object("statusbar")
+        #self.window_old = builder.get_object("window")
+        #self.window_old.hide()
+        #self.notebook_old = builder.get_object("notebook")
+        #self.notebook_old.hide()
+        #self.vbox_old = builder.get_object("vbox")
+        #self.vbox_old.hide()
+        #self.window.remove(self.vbox_old)
+        #self.statusbar_old = builder.get_object("statusbar")
+        #self.statusbar_old.hide()
 
-        scrolledwindow = builder.get_object("scrolledwindow")
-        textview = builder.get_object("textview")
-        label = builder.get_object("notebook_label")
+        #scrolledwindow = builder.get_object("scrolledwindow")
+        #textview = builder.get_object("textview")
+        #label = builder.get_object("notebook_label")
         
         #hide the tab widgets, we'll create our own
-        scrolledwindow.hide()
-        textview.hide()
-        label.hide()
+        #scrolledwindow.hide()
+        #textview.hide()
+        #label.hide()
+        
+        self.build_ui()
         
         #remove the notebook tab that was created by glade
         self.notebook.remove_page(0)
 
         #link the signal handlers
-        builder.connect_signals(self)
-     
+        #builder.connect_signals(self)
+
+
         #set up a clipboard
         self.clipboard = gtk.Clipboard()
 
@@ -73,6 +82,60 @@ class TextEditor(object):
         else:
             #open works differently if there's only the original "New Document" tab
             self.only_first_tab = 1
+
+    def build_ui(self):
+        ### Window ###
+        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window.set_title('Coder')
+        self.window.set_default_size(300,500)
+        self.window.connect('delete-event',self.on_window_delete_event)
+        self.window.connect('destroy',self.on_window_destroy)
+        self.window.show()
+
+        vbox = gtk.VBox()
+        self.window.add(vbox)
+        vbox.show()
+
+        #menus = ''' 
+        #<ui>
+        #<menubar>
+        #    <menu name="FileMenu" action="FileMenuAction">
+        #        <menuitem name="New" action="on_menu_item_new_activate" />
+        #    </menu>
+        #</menubar>
+        #</ui>
+        #'''
+        #def add_menu_widget(uimanager,widget,data=None):
+        #    print widget
+        #    #vbox.pack_start(widget,expand=False,fill=True,padding=0)
+        #uimanager = gtk.UIManager()
+        #uimanager.connect("add_widget",add_menu_widget, vbox)
+        #mergeid = uimanager.add_ui_from_string(menus)
+        #menubars = uimanager.get_toplevels(gtk.UI_MANAGER_MENUBAR)
+        #print menubars
+        #menubar = menubars[0]
+        #vbox.pack_start(menubar,expand=False,fill=True,padding=0)
+        #uimanager.ensure_update()
+
+        menubar = gtk.MenuBar()
+        file = gtk.MenuItem(label='_File',use_underline=True)
+        file.show()
+        menubar.add(file)
+
+        menubar.show()
+        vbox.pack_start(menubar,expand=False,fill=True,padding=0)
+
+        ### Notebook ###
+        self.notebook = gtk.Notebook()
+        self.notebook.connect('switch-page',self.on_notebook_switch_page)        
+        vbox.pack_start(self.notebook,expand=True,fill=True,padding=0)
+        self.notebook.show()
+
+        ### Status Bar ###
+        self.statusbar = gtk.Statusbar()
+        vbox.pack_start(self.statusbar,expand=False,fill=True,padding=0)
+        self.statusbar.set_spacing(2)
+        self.statusbar.show()
 
         
     ### window signal handlers ###
