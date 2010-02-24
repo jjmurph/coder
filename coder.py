@@ -92,37 +92,38 @@ class TextEditor(object):
         self.window.connect('destroy',self.on_window_destroy)
         self.window.show()
 
+        ### Main Container ###
         vbox = gtk.VBox()
         self.window.add(vbox)
         vbox.show()
 
-        #menus = ''' 
-        #<ui>
-        #<menubar>
-        #    <menu name="FileMenu" action="FileMenuAction">
-        #        <menuitem name="New" action="on_menu_item_new_activate" />
-        #    </menu>
-        #</menubar>
-        #</ui>
-        #'''
-        #def add_menu_widget(uimanager,widget,data=None):
-        #    print widget
-        #    #vbox.pack_start(widget,expand=False,fill=True,padding=0)
-        #uimanager = gtk.UIManager()
-        #uimanager.connect("add_widget",add_menu_widget, vbox)
-        #mergeid = uimanager.add_ui_from_string(menus)
-        #menubars = uimanager.get_toplevels(gtk.UI_MANAGER_MENUBAR)
-        #print menubars
-        #menubar = menubars[0]
-        #vbox.pack_start(menubar,expand=False,fill=True,padding=0)
-        #uimanager.ensure_update()
-
+        ### Menus ###    
         menubar = gtk.MenuBar()
-        file = gtk.MenuItem(label='_File',use_underline=True)
-        file.show()
-        menubar.add(file)
 
-        menubar.show()
+        ### File Menu ###
+        menu_item = gtk.MenuItem(label='_File',use_underline=True)
+        menu = gtk.Menu()
+        item = gtk.MenuItem(label='_New',use_underline=True)
+        item.connect('activate',self.on_menu_item_new_activate)                
+        menu.append(item)
+        item = gtk.MenuItem(label='_Open',use_underline=True)
+        menu.append(item)
+        menu_item.set_submenu(menu)
+        menubar.add(menu_item)
+
+        ### Edit Menu ###
+        menu_item = gtk.MenuItem(label='_Edit',use_underline=True)
+        menu = gtk.Menu()
+        item = gtk.MenuItem(label='_Cut',use_underline=True)
+        menu.append(item)
+        item = gtk.MenuItem(label='_Copy',use_underline=True)
+        menu.append(item)
+        item = gtk.MenuItem(label='_Paste',use_underline=True)
+        menu.append(item)        
+        menu_item.set_submenu(menu)
+        menubar.add(menu_item)
+
+        menubar.show_all()
         vbox.pack_start(menubar,expand=False,fill=True,padding=0)
 
         ### Notebook ###
