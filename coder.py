@@ -108,22 +108,11 @@ class TextEditor(object):
         item.connect('activate',self.on_menu_item_new_activate)                
         menu.append(item)
         item = gtk.ImageMenuItem(gtk.STOCK_OPEN,accelgroup)
-        img = gtk.ImageMenuItem.get_image(item)
-        img.show()
-        
-        
         item.connect('activate',self.on_menu_item_open_activate)       
-        
-        
-        
         menu.append(item)
-        
-        
         item = gtk.ImageMenuItem(gtk.STOCK_QUIT,accelgroup)
         item.connect('activate',self.on_menu_item_quit_activate)       
         menu.append(item)
-        
-        
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
