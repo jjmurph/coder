@@ -90,7 +90,8 @@ class TextEditor(object):
         self.window.set_default_size(300,500)
         self.window.connect('delete-event',self.on_window_delete_event)
         self.window.connect('destroy',self.on_window_destroy)
-        self.window.show()
+        accelgroup = gtk.AccelGroup()
+        self.window.add_accel_group(accelgroup)
 
         ### Main Container ###
         vbox = gtk.VBox()
@@ -103,10 +104,12 @@ class TextEditor(object):
         ### File Menu ###
         menu_item = gtk.MenuItem(label='_File',use_underline=True)
         menu = gtk.Menu()
-        item = gtk.MenuItem(label='_New',use_underline=True)
+        item = gtk.ImageMenuItem(gtk.STOCK_NEW,accelgroup)
+        #key, mod = gtk.accelerator_parse("<Ctrl>N")
+        #item.add_accelerator("activate",accelgroup,key,mod,gtk.ACCEL_VISIBLE)
         item.connect('activate',self.on_menu_item_new_activate)                
         menu.append(item)
-        item = gtk.MenuItem(label='_Open',use_underline=True)
+        item = gtk.ImageMenuItem(gtk.STOCK_OPEN,accelgroup)
         item.connect('activate',self.on_menu_item_open_activate)                
         menu.append(item)
         menu_item.set_submenu(menu)
@@ -127,7 +130,7 @@ class TextEditor(object):
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
-	### Search Menu ###
+	    ### Search Menu ###
         menu_item = gtk.MenuItem(label='_Search',use_underline=True)
         menu = gtk.Menu()
         item = gtk.MenuItem(label='_Find',use_underline=True)
@@ -142,7 +145,7 @@ class TextEditor(object):
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
-	### Tools Menu ###
+    	### Tools Menu ###
         menu_item = gtk.MenuItem(label='_Tools',use_underline=True)
         menu = gtk.Menu()
         item = gtk.MenuItem(label='_Run',use_underline=True)
@@ -166,6 +169,7 @@ class TextEditor(object):
         self.statusbar.set_spacing(2)
         self.statusbar.show()
 
+        self.window.show()
         
     ### window signal handlers ###
     
@@ -274,6 +278,20 @@ class TextEditor(object):
 
     def on_menu_item_find_activate(self,widget,data=None):
         print('on_menu_item_find_activate')
+        
+        tab = self.current_tab()
+        textview = tab.get_textview()
+        textbuffer = textview.get_buffer()
+       
+        search_str =  'blah'
+        start_iter =  textbuffer.get_start_iter() 
+        #match_start = textbuffer.get_start_iter() 
+        #match_end =   textbuffer.get_end_iter() 
+        found =       start_iter.forward_search(search_str,0, None) 
+        if found:
+           match_start,match_end = found
+           textbuffer.select_range(match_start,match_end)
+
         
     def on_menu_item_replace_activate(self,widget,data=None):
         print('on_menu_item_replace_activate')
