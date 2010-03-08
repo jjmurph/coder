@@ -105,13 +105,25 @@ class TextEditor(object):
         menu_item = gtk.MenuItem(label='_File',use_underline=True)
         menu = gtk.Menu()
         item = gtk.ImageMenuItem(gtk.STOCK_NEW,accelgroup)
-        #key, mod = gtk.accelerator_parse("<Ctrl>N")
-        #item.add_accelerator("activate",accelgroup,key,mod,gtk.ACCEL_VISIBLE)
         item.connect('activate',self.on_menu_item_new_activate)                
         menu.append(item)
         item = gtk.ImageMenuItem(gtk.STOCK_OPEN,accelgroup)
-        item.connect('activate',self.on_menu_item_open_activate)                
+        img = gtk.ImageMenuItem.get_image(item)
+        img.show()
+        
+        
+        item.connect('activate',self.on_menu_item_open_activate)       
+        
+        
+        
         menu.append(item)
+        
+        
+        item = gtk.ImageMenuItem(gtk.STOCK_QUIT,accelgroup)
+        item.connect('activate',self.on_menu_item_quit_activate)       
+        menu.append(item)
+        
+        
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
@@ -133,13 +145,15 @@ class TextEditor(object):
 	    ### Search Menu ###
         menu_item = gtk.MenuItem(label='_Search',use_underline=True)
         menu = gtk.Menu()
-        item = gtk.MenuItem(label='_Find',use_underline=True)
+        item = gtk.ImageMenuItem(gtk.STOCK_FIND,accelgroup)
         item.connect('activate',self.on_menu_item_find_activate)                
         menu.append(item)
-        item = gtk.MenuItem(label='_Find and Replace',use_underline=True)
+        item = gtk.ImageMenuItem(gtk.STOCK_FIND_AND_REPLACE,accelgroup)
         item.connect('activate',self.on_menu_item_replace_activate)                
         menu.append(item)
         item = gtk.MenuItem(label='_Goto Line',use_underline=True)
+        key, mod = gtk.accelerator_parse("<Ctrl>G")
+        item.add_accelerator("activate",accelgroup,key,mod,gtk.ACCEL_VISIBLE)        
         item.connect('activate',self.on_menu_item_goto_activate)                
         menu.append(item)        
         menu_item.set_submenu(menu)
@@ -148,7 +162,7 @@ class TextEditor(object):
     	### Tools Menu ###
         menu_item = gtk.MenuItem(label='_Tools',use_underline=True)
         menu = gtk.Menu()
-        item = gtk.MenuItem(label='_Run',use_underline=True)
+        item = gtk.ImageMenuItem(gtk.STOCK_EXECUTE,accelgroup)
         item.connect('activate',self.on_menu_item_run_activate)                
         menu.append(item)
         menu_item.set_submenu(menu)
