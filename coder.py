@@ -87,7 +87,7 @@ class TextEditor(object):
         ### Window ###
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_title('Coder')
-        self.window.set_default_size(300,500)
+        self.window.set_default_size(800,1000)
         self.window.connect('delete-event',self.on_window_delete_event)
         self.window.connect('destroy',self.on_window_destroy)
         accelgroup = gtk.AccelGroup()

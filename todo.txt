@@ -1,2 +1,10 @@
 add find and replace
 
+add icon for goto line menu item
+
+change name of execute to run
+add accelerator for run
+
+clean out all the commented out glade code
+
+change the tab init routine so it doesn't refer to glade anymore
