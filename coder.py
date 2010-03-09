@@ -110,6 +110,17 @@ class TextEditor(object):
         item = gtk.ImageMenuItem(gtk.STOCK_OPEN,accelgroup)
         item.connect('activate',self.on_menu_item_open_activate)       
         menu.append(item)
+        item = gtk.ImageMenuItem(gtk.STOCK_SAVE,accelgroup)
+        item.connect('activate',self.on_menu_item_save_activate)       
+        menu.append(item)
+        item = gtk.ImageMenuItem(gtk.STOCK_SAVE_AS,accelgroup)
+        item.connect('activate',self.on_menu_item_save_as_activate)       
+        menu.append(item)
+        item = gtk.ImageMenuItem(gtk.STOCK_CLOSE,accelgroup)
+        item.connect('activate',self.on_menu_item_close_activate)       
+        menu.append(item)
+        item = gtk.SeparatorMenuItem()
+        menu.append(item)
         item = gtk.ImageMenuItem(gtk.STOCK_QUIT,accelgroup)
         item.connect('activate',self.on_menu_item_quit_activate)       
         menu.append(item)
@@ -119,15 +130,15 @@ class TextEditor(object):
         ### Edit Menu ###
         menu_item = gtk.MenuItem(label='_Edit',use_underline=True)
         menu = gtk.Menu()
-        item = gtk.MenuItem(label='_Cut',use_underline=True)
-        item.connect('activate',self.on_menu_item_cut_activate)                
+        item = gtk.ImageMenuItem(gtk.STOCK_CUT,accelgroup)
+        item.connect('activate',self.on_menu_item_cut_activate)       
         menu.append(item)
-        item = gtk.MenuItem(label='_Copy',use_underline=True)
-        item.connect('activate',self.on_menu_item_copy_activate)                
+        item = gtk.ImageMenuItem(gtk.STOCK_COPY,accelgroup)
+        item.connect('activate',self.on_menu_item_copy_activate)       
         menu.append(item)
-        item = gtk.MenuItem(label='_Paste',use_underline=True)
-        item.connect('activate',self.on_menu_item_paste_activate)                
-        menu.append(item)        
+        item = gtk.ImageMenuItem(gtk.STOCK_PASTE,accelgroup)
+        item.connect('activate',self.on_menu_item_paste_activate)       
+        menu.append(item)
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
@@ -269,13 +280,6 @@ class TextEditor(object):
             textview = tab.get_textview()
             textbuffer = textview.get_buffer()
             textbuffer.paste_clipboard(self.clipboard,None,textview.get_editable())
-
-    def on_menu_item_delete_activate(self,widget,data=None):
-        if self.tabs:
-            tab = self.current_tab()
-            textview = tab.get_textview()
-            textbuffer = textview.get_buffer()
-            textbuffer.delete_selection(True,textview.get_editable())
 
     ### search menu signal handlers ###
 
