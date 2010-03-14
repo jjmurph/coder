@@ -147,6 +147,12 @@ class TextEditor(object):
 
         ### Notebook ###
         self.notebook = gtk.Notebook()
+        
+        #key, mod = gtk.accelerator_parse('<Ctrl>Tab')
+        #self.notebook.add_accelerator('change-current-page',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
+        #self.notebook.add_accelerator('key-press-event',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
+        self.notebook.connect('key-press-event',self.on_notebook_key_press_event)
+        
         self.notebook.connect('switch-page',self.on_notebook_switch_page)        
         vbox.pack_start(self.notebook,expand=True,fill=True,padding=0)
         self.notebook.show()
@@ -158,6 +164,21 @@ class TextEditor(object):
         self.statusbar.show()
 
         self.window.show()
+        
+    def on_notebook_key_press_event(self,widget,data=None):
+        keyname = gtk.gdk.keyval_name(data.keyval)
+        #print "Key %s (%d) was pressed" % (keyname, data.keyval)
+        #print data.state
+        if data.state & gtk.gdk.CONTROL_MASK:
+            if keyname == 'Tab':
+                print '<Ctrl>Tab'
+                self.notebook.next_page()
+            if data.state & gtk.gdk.SHIFT_MASK:
+                if keyname == 'ISO_Left_Tab':
+                    print '<Ctrl><Shift>Tab'
+                    self.notebook.prev_page() 
+            
+
         
     ### window signal handlers ###
     
