@@ -25,7 +25,6 @@ class TextEditor(object):
         Sets up the GUI.
         Accepts an optional list of filenames to open
         '''
-
         self.build_ui()
         
         #set up a clipboard
@@ -58,6 +57,7 @@ class TextEditor(object):
         self.window.set_default_size(800,1000)
         self.window.connect('delete-event',self.on_window_delete_event)
         self.window.connect('destroy',self.on_window_destroy)
+        self.window.connect('key-press-event',self.on_window_key_press_event)
         accelgroup = gtk.AccelGroup()
         self.window.add_accel_group(accelgroup)
 
@@ -147,12 +147,6 @@ class TextEditor(object):
 
         ### Notebook ###
         self.notebook = gtk.Notebook()
-        
-        #key, mod = gtk.accelerator_parse('<Ctrl>Tab')
-        #self.notebook.add_accelerator('change-current-page',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
-        #self.notebook.add_accelerator('key-press-event',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
-        self.notebook.connect('key-press-event',self.on_notebook_key_press_event)
-        
         self.notebook.connect('switch-page',self.on_notebook_switch_page)        
         vbox.pack_start(self.notebook,expand=True,fill=True,padding=0)
         self.notebook.show()
@@ -165,21 +159,6 @@ class TextEditor(object):
 
         self.window.show()
         
-    def on_notebook_key_press_event(self,widget,data=None):
-        keyname = gtk.gdk.keyval_name(data.keyval)
-        #print "Key %s (%d) was pressed" % (keyname, data.keyval)
-        #print data.state
-        if data.state & gtk.gdk.CONTROL_MASK:
-            if keyname == 'Tab':
-                print '<Ctrl>Tab'
-                self.notebook.next_page()
-            if data.state & gtk.gdk.SHIFT_MASK:
-                if keyname == 'ISO_Left_Tab':
-                    print '<Ctrl><Shift>Tab'
-                    self.notebook.prev_page() 
-            
-
-        
     ### window signal handlers ###
     
     def on_window_delete_event(self,widget,data=None):
@@ -190,6 +169,18 @@ class TextEditor(object):
 
     def on_window_destroy(self,widget,data=None):
         pass
+
+    def on_window_key_press_event(self,widget,data=None):
+        '''
+        check for <Ctrl>Tab or <Shift><Ctrl>Tab to switch tabs
+        '''
+        keyname = gtk.gdk.keyval_name(data.keyval)
+        if data.state & gtk.gdk.CONTROL_MASK:
+            if keyname == 'Tab':
+                self.next_tab()
+            if data.state & gtk.gdk.SHIFT_MASK:
+                if keyname == 'ISO_Left_Tab':
+                    self.prev_tab()
 
     ### file menu handlers ###
 
@@ -293,7 +284,6 @@ class TextEditor(object):
         if found:
            match_start,match_end = found
            textbuffer.select_range(match_start,match_end)
-
         
     def on_menu_item_replace_activate(self,widget,data=None):
         print('on_menu_item_replace_activate')
@@ -326,7 +316,6 @@ class TextEditor(object):
         context_id = self.statusbar.get_context_id("filename")
         self.statusbar.push(context_id,filename)
 
-        
     ###########################
 
     def quit(self):
@@ -374,6 +363,36 @@ class TextEditor(object):
         #have just the original "New Document" tab
         self.only_first_tab = 0
     
+    def next_tab(self):
+        '''
+        advance to the next tab
+        loops around to first tab if at the end
+        '''
+        if self.tabs:
+            cur_tab = self.current_page()
+            num_tabs = len(self.tabs)-1
+            if num_tabs > 0:
+                if cur_tab == num_tabs:
+                    self.notebook.set_current_page(0)
+                else:
+                    self.notebook.set_current_page(cur_tab+1)
+                self.current_tab().focus()
+                                
+    def prev_tab(self):
+        '''
+        move back to the previous tab
+        loops around to last tab if at the beginning
+        '''
+        if self.tabs:
+            cur_tab = self.current_page()
+            num_tabs = len(self.tabs)-1
+            if num_tabs > 0:
+                if cur_tab == 0:
+                    self.notebook.set_current_page(num_tabs)
+                else:
+                    self.notebook.set_current_page(cur_tab-1)
+                self.current_tab().focus()
+   
     def load_file(self,filename):
         try:
             f = open(filename,'r')
@@ -472,6 +491,7 @@ class Tab(object):
         self.notebook.append_page(self.window,self.label)
         self.window.show()
         self.textview.show()
+        self.focus()
     
     def create_widgets(self):
         'Creates the Scrolled Window, Text View, and Label'
@@ -545,6 +565,10 @@ class Tab(object):
     
     def has_unsaved_changes(self):
         return self.changed
+
+    def focus(self):
+        # this should set focus to the textview but doesn't always work
+        self.textview.grab_focus()
 
 def main(filenames=[]):
     '''

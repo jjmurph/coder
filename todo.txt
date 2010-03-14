@@ -1,4 +1,3 @@
-add <Ctrl>Tab to notebook for tab switching
 
 add find and replace
 
