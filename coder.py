@@ -22,42 +22,12 @@ class TextEditor(object):
 
     def __init__(self,filenames=[]):
         '''
-        Loads the Glade file and sets up the GUI.
+        Sets up the GUI.
         Accepts an optional list of filenames to open
         '''
 
-        #builder = gtk.Builder()
-        #builder.add_from_file("coder.glade")
-        
-        #gtk objects from glade
-        #self.window_old = builder.get_object("window")
-        #self.window_old.hide()
-        #self.notebook_old = builder.get_object("notebook")
-        #self.notebook_old.hide()
-        #self.vbox_old = builder.get_object("vbox")
-        #self.vbox_old.hide()
-        #self.window.remove(self.vbox_old)
-        #self.statusbar_old = builder.get_object("statusbar")
-        #self.statusbar_old.hide()
-
-        #scrolledwindow = builder.get_object("scrolledwindow")
-        #textview = builder.get_object("textview")
-        #label = builder.get_object("notebook_label")
-        
-        #hide the tab widgets, we'll create our own
-        #scrolledwindow.hide()
-        #textview.hide()
-        #label.hide()
-        
         self.build_ui()
         
-        #remove the notebook tab that was created by glade
-        self.notebook.remove_page(0)
-
-        #link the signal handlers
-        #builder.connect_signals(self)
-
-
         #set up a clipboard
         self.clipboard = gtk.Clipboard()
 
@@ -65,8 +35,6 @@ class TextEditor(object):
         self.tabs = []
 
         #build a Tab object for the first page of the notebook
-        #tab = Tab(self.notebook,scrolledwindow,textview,label)
-        #self.tabs.append(tab)
         self.new_tab()
 
         #load files from the command line if there were any
@@ -151,9 +119,6 @@ class TextEditor(object):
         item = gtk.ImageMenuItem(gtk.STOCK_FIND_AND_REPLACE,accelgroup)
         item.connect('activate',self.on_menu_item_replace_activate)                
         menu.append(item)
-        #item = gtk.MenuItem(label='_Goto Line',use_underline=True)
-    	#image = gtk.image_new_from_stock(gtk.STOCK_JUMP_TO,gtk.ICON_SIZE_MENU)
-	    #item = gtk.ImageMenuItem(gtk.STOCK_JUMP_TO,accelgroup)
         item = gtk.ImageMenuItem('_Goto Line')
         image = gtk.image_new_from_stock(gtk.STOCK_JUMP_TO,gtk.ICON_SIZE_MENU)
         item.set_image(image)
