@@ -1,8 +1,10 @@
+add <Ctrl>Tab to notebook for tab switching
+
 add find and replace
 
-change name of execute to run
-add accelerator for run
+add goto line
 
-clean out all the commented out glade code
+add line and column numbers to status bar
 
-change the tab init routine so it doesn't refer to glade anymore
+shouldn't be able to close an unsaved tab without confirmation
+the confirmation is only on quiting the application, not closing a tab
