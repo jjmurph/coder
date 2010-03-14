@@ -1,7 +1,5 @@
 add find and replace
 
-add icon for goto line menu item
-
 change name of execute to run
 add accelerator for run
 
