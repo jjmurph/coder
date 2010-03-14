@@ -443,28 +443,12 @@ class Tab(object):
         source_language_manager = gtksourceview2.language_manager_get_default()
         langs = {'py':'python','glade':'xml','pl':'perl'}
     
-    def __init__(self,notebook,window=None,textview=None,label=None):
-        '''
-        The first tab is built by Glade, we just need to store the widgets.
-        Subsequent tabs are built dynamically, only the notebook
-        argument should be used for those.
-        '''
-        #TODO: we should always be creating the widgets dynamically now
-        # the window, textview, and label params should be removed
-
+    def __init__(self,notebook):
         self.notebook = notebook
         self.filename = ""
         self.changed = 0
-
-        if window is None:
-            self.create_widgets()
-            self.notebook.append_page(self.window,self.label)
-        else:
-            # widgets were already built by glade
-            self.window = window
-            self.textview = textview
-            self.label = label
- 
+        self.create_widgets()
+        self.notebook.append_page(self.window,self.label)
         self.window.show()
         self.textview.show()
     
