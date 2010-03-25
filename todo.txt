@@ -5,5 +5,4 @@ add goto line
 
 add line and column numbers to status bar
 
-shouldn't be able to close an unsaved tab without confirmation
-the confirmation is only on quiting the application, not closing a tab
+

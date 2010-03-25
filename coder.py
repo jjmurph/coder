@@ -320,7 +320,6 @@ class TextEditor(object):
 
     def quit(self):
         changes = 0
-        quit = 0
         for tab in self.tabs:
             if tab.has_unsaved_changes():
                 changes = 1
@@ -456,8 +455,29 @@ class TextEditor(object):
 
     def close_tab(self):
         if self.tabs:
-            self.notebook.remove_page(self.current_page())
-            self.tabs.remove(self.current_tab())
+            page = self.current_page()
+            tab = self.current_tab()
+            quit = True
+            if tab.has_unsaved_changes():
+                if not self.ok_to_close_tab():
+                    quit = False
+            if quit:
+                self.notebook.remove_page(page)
+                self.tabs.remove(tab)		    	
+
+    def ok_to_close_tab(self):
+        dialog = gtk.MessageDialog(parent=self.window,
+                                  flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                                  type=gtk.MESSAGE_QUESTION,
+                                  buttons=gtk.BUTTONS_OK_CANCEL,
+                                  message_format="Tab has unsaved changes, are you sure you want to close it?")
+        dialog_response = dialog.run()
+        ok_to_quit = False
+        if dialog_response == gtk.RESPONSE_OK:
+            ok_to_quit = True
+        dialog.destroy()
+        return ok_to_quit
+
 
     def ok_to_overwrite_file(self,filename):
         dialog = gtk.MessageDialog(parent=self.window,
