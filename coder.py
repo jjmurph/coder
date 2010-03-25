@@ -309,12 +309,13 @@ class TextEditor(object):
     ### notebook signal handlers ###
 
     def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
-        filename = ""
+        #   filename = ""
         if self.tabs:
             tab = self.tabs[new_page_num]
-            filename = tab.get_filename()
-        context_id = self.statusbar.get_context_id("filename")
-        self.statusbar.push(context_id,filename)
+            #filename = tab.get_filename()
+            tab.update_statusbar()
+        #context_id = self.statusbar.get_context_id("status")
+        #self.statusbar.pop(context_id,filename)
 
     ###########################
 
@@ -355,7 +356,7 @@ class TextEditor(object):
             return -1
 
     def new_tab(self):
-        tab = Tab(self.notebook)
+        tab = Tab(self.notebook,self.statusbar)
         self.tabs.append(tab)
         self.notebook.set_current_page(len(self.tabs)-1)
         #reset the flag to indicate that we no longer
@@ -416,8 +417,7 @@ class TextEditor(object):
             tab.set_filename(filename)
             
             #update the status bar
-            context_id = self.statusbar.get_context_id("filename")
-            self.statusbar.push(context_id,filename)
+            tab.update_statusbar()
 
             print("Loaded %s" % filename)
         except IOError as e:
@@ -446,8 +446,7 @@ class TextEditor(object):
                 tab.set_filename(filename)
 
                 #update the status bar
-                context_id = self.statusbar.get_context_id("filename")
-                self.statusbar.push(context_id,filename)
+                tab.update_statusbar()
 
                 print("Saved %s" % filename)
             except IOError as e:
@@ -503,10 +502,13 @@ class Tab(object):
         source_language_manager = gtksourceview2.language_manager_get_default()
         langs = {'py':'python','glade':'xml','pl':'perl'}
     
-    def __init__(self,notebook):
+    def __init__(self,notebook,statusbar):
         self.notebook = notebook
+        self.statusbar = statusbar
         self.filename = ""
         self.changed = 0
+        self.line = 0
+        self.col = 0
         self.create_widgets()
         self.notebook.append_page(self.window,self.label)
         self.window.show()
@@ -523,7 +525,9 @@ class Tab(object):
         else:
             self.textbuffer = gtk.TextBuffer()
             self.textview = gtk.TextView(self.textbuffer)
-        self.textbuffer.connect('modified-changed',self.buffer_modified_changed)        
+        #self.textview.connect('move-cursor',self.textview_move_cursor)
+        self.textview.connect('event-after',self.textview_event_after)
+        self.textbuffer.connect('modified-changed',self.buffer_modified_changed)
         self.window.add(self.textview)
         self.label = gtk.Label("New Document")        
     
@@ -566,6 +570,27 @@ class Tab(object):
             lang_id = ext
         language = Tab.source_language_manager.get_language(lang_id)
         self.textbuffer.set_language(language)
+
+    def textview_event_after(self,widget,event,data=None):
+        pos = self.textbuffer.get_property('cursor-position')
+        textiter = self.textbuffer.get_iter_at_offset(pos)
+        line = textiter.get_line()
+        col = textiter.get_line_offset()
+        changed = False
+        if self.line != line:
+            self.line = line
+            changed = True
+        if self.col != col:
+            self.col = col
+            changed = True
+        if changed:
+            self.update_statusbar()
+
+    def update_statusbar(self):
+        status = '%s       Line: %s  Col: %s' % (self.filename,self.line,self.col)
+        context_id = self.statusbar.get_context_id("status")
+        self.statusbar.pop(context_id)
+        self.statusbar.push(context_id,status)        
 
     def buffer_modified_changed(self,widget):
         if self.changed:

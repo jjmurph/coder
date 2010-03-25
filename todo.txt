@@ -3,6 +3,6 @@ add find and replace
 
 add goto line
 
-add line and column numbers to status bar
+opening a file should place the cursor at the beginning, not the end
 
 
