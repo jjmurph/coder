@@ -490,7 +490,12 @@ class Tab(object):
     if SOURCE_VIEW:
         source_language_manager = gtksourceview2.language_manager_get_default()
         langs = {'py':'python','glade':'xml','pl':'perl'}
-    
+        style_scheme_manager = gtksourceview2.style_scheme_manager_get_default()
+        cur_path = os.path.abspath(sys.path[0])
+        styles_path = os.path.join(cur_path,'styles')
+        style_scheme_manager.prepend_search_path(styles_path)
+        scheme = style_scheme_manager.get_scheme('coder')
+            
     def __init__(self,notebook,statusbar):
         self.notebook = notebook
         self.statusbar = statusbar
@@ -510,12 +515,17 @@ class Tab(object):
         self.window.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
         if SOURCE_VIEW:
             self.textbuffer = gtksourceview2.Buffer()
+            self.textbuffer.set_style_scheme(Tab.scheme)
+            self.textbuffer.create_tag('font',font='Monospace 10')
+            self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
             self.textview = gtksourceview2.View(self.textbuffer)
+                
         else:
             self.textbuffer = gtk.TextBuffer()
             self.textview = gtk.TextView(self.textbuffer)
         self.textview.connect('event-after',self.textview_event_after)
         self.textbuffer.connect('modified-changed',self.buffer_modified_changed)
+        self.textbuffer.connect('changed',self.buffer_changed)
         self.window.add(self.textview)
         self.label = gtk.Label("New Document")        
     
@@ -596,6 +606,9 @@ class Tab(object):
                 text = "New Document *"
             self.label.set_text(text)            
     
+    def buffer_changed(self,widget):
+        self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
+
     def has_unsaved_changes(self):
         return self.changed
 
