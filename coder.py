@@ -398,28 +398,17 @@ class TextEditor(object):
             f = open(filename,'r')
             text = f.read()
             f.close()
-            
             tab = self.current_tab()
             textview = tab.get_textview()
             textbuffer = textview.get_buffer()
-            
-            #disable the text view while loading the buffer
             textview.set_sensitive(False)
-            
-            #store the file's contents in the buffer
             textbuffer.set_text(text)
+            start = textbuffer.get_start_iter()
+            textbuffer.place_cursor(start)
             textbuffer.set_modified(False)
-            
-            #turn the text view back on
             textview.set_sensitive(True)
-          
-            #update the filename and label of the tab
             tab.set_filename(filename)
-            
-            #update the status bar
             tab.update_statusbar()
-
-            print("Loaded %s" % filename)
         except IOError as e:
             print("Couldn't open file %s" % filename)
 
@@ -430,25 +419,14 @@ class TextEditor(object):
             textbuffer = textview.get_buffer()
             start = textbuffer.get_start_iter()
             end = textbuffer.get_end_iter()
-
-            # get the full text in the buffer
             text = textbuffer.get_text(start,end)
-
             try:
                 f = open(filename,'w')
                 f.write(text)
                 f.close()
-
-                # reset the modified flag
                 textbuffer.set_modified(False)
-
-                #update the filename and label of the tab
                 tab.set_filename(filename)
-
-                #update the status bar
                 tab.update_statusbar()
-
-                print("Saved %s" % filename)
             except IOError as e:
                 print("Error saving file %s" % filename)
 
@@ -525,7 +503,6 @@ class Tab(object):
         else:
             self.textbuffer = gtk.TextBuffer()
             self.textview = gtk.TextView(self.textbuffer)
-        #self.textview.connect('move-cursor',self.textview_move_cursor)
         self.textview.connect('event-after',self.textview_event_after)
         self.textbuffer.connect('modified-changed',self.buffer_modified_changed)
         self.window.add(self.textview)
