@@ -270,21 +270,37 @@ class TextEditor(object):
     ### search menu signal handlers ###
 
     def on_menu_item_find_activate(self,widget,data=None):
-        print('on_menu_item_find_activate')
-        
         tab = self.current_tab()
         textview = tab.get_textview()
         textbuffer = textview.get_buffer()
-       
-        search_str =  'blah'
-        start_iter =  textbuffer.get_start_iter() 
-        #match_start = textbuffer.get_start_iter() 
-        #match_end =   textbuffer.get_end_iter() 
-        found =       start_iter.forward_search(search_str,0, None) 
+        dialog = gtk.Dialog(
+                    title = 'Find',
+                    parent = self.window,
+                    flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                    buttons = ('Find',gtk.RESPONSE_ACCEPT))
+        entry = gtk.Entry()
+        dialog.add_action_widget(entry,gtk.RESPONSE_ACCEPT)
+        box = dialog.get_action_area()
+        box.reorder_child(entry,0)
+        entry.show()
+        response = dialog.run()
+        if response == gtk.RESPONSE_ACCEPT:
+            search = entry.get_text()
+        dialog.destroy()
+        pos = textbuffer.get_property('cursor-position')
+        cur_iter = textbuffer.get_iter_at_offset(pos)
+        found = cur_iter.forward_search(search,flags=0)
         if found:
            match_start,match_end = found
            textbuffer.select_range(match_start,match_end)
-        
+        else:
+            #loop around to beginning, stopping at cursor position
+            start_iter = textbuffer.get_start_iter()
+            found = start_iter.forward_search(search,flags=0,limit=cur_iter)
+            if found:
+               match_start,match_end = found
+               textbuffer.select_range(match_start,match_end)
+
     def on_menu_item_replace_activate(self,widget,data=None):
         print('on_menu_item_replace_activate')
 
@@ -309,13 +325,9 @@ class TextEditor(object):
     ### notebook signal handlers ###
 
     def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
-        #   filename = ""
         if self.tabs:
             tab = self.tabs[new_page_num]
-            #filename = tab.get_filename()
             tab.update_statusbar()
-        #context_id = self.statusbar.get_context_id("status")
-        #self.statusbar.pop(context_id,filename)
 
     ###########################
 
@@ -454,7 +466,6 @@ class TextEditor(object):
             ok_to_quit = True
         dialog.destroy()
         return ok_to_quit
-
 
     def ok_to_overwrite_file(self,filename):
         dialog = gtk.MessageDialog(parent=self.window,
