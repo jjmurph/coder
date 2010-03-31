@@ -7,5 +7,5 @@ add goto line
 
 opening a file should default to the directory of the current tab's file
 
-replace tabs w/ spaces
+
 

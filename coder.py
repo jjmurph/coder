@@ -4,6 +4,7 @@ import sys
 import os
 import gtk
 import subprocess
+import re
 
 # try to import gtksourceview2
 # if it doesn't exist then we'll just use a normal text view
@@ -519,13 +520,13 @@ class Tab(object):
             self.textbuffer.create_tag('font',font='Monospace 10')
             self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
             self.textview = gtksourceview2.View(self.textbuffer)
-                
         else:
             self.textbuffer = gtk.TextBuffer()
             self.textview = gtk.TextView(self.textbuffer)
         self.textview.connect('event-after',self.textview_event_after)
         self.textbuffer.connect('modified-changed',self.buffer_modified_changed)
         self.textbuffer.connect('changed',self.buffer_changed)
+        self.buffer_insert_after_handle = self.textbuffer.connect_after('insert-text',self.buffer_insert_after)
         self.window.add(self.textview)
         self.label = gtk.Label("New Document")        
     
@@ -609,6 +610,18 @@ class Tab(object):
     def buffer_changed(self,widget):
         self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
 
+    def buffer_insert_after(self,widget,textiter,text,length,data=None):
+        'replaces tabs with 4 spaces'
+        if '\t' in text:
+            self.textbuffer.disconnect(self.buffer_insert_after_handle)
+            end = textiter.copy()
+            start = textiter.copy()
+            start.backward_chars(length)
+            self.textbuffer.delete(start,end)
+            text = re.sub('\t','    ',text)
+            self.textbuffer.insert_at_cursor(text)
+            self.buffer_insert_after_handle = self.textbuffer.connect_after('insert-text',self.buffer_insert_after)
+                    
     def has_unsaved_changes(self):
         return self.changed
 
