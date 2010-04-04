@@ -28,6 +28,11 @@ class TextEditor(object):
         '''
         self.build_ui()
         
+        #values of the last used find, replace, and goto line entries
+        self.last_find = ""
+        self.last_replace = ""
+        self.last_goto = ""
+        
         #set up a clipboard
         self.clipboard = gtk.Clipboard()
 
@@ -280,29 +285,39 @@ class TextEditor(object):
                     flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                     buttons = ('Find',gtk.RESPONSE_ACCEPT))
         entry = gtk.Entry()
+        entry.set_text(self.last_find)
         dialog.add_action_widget(entry,gtk.RESPONSE_ACCEPT)
         box = dialog.get_action_area()
         box.reorder_child(entry,0)
         entry.show()
-        response = dialog.run()
-        if response == gtk.RESPONSE_ACCEPT:
-            search = entry.get_text()
-        dialog.destroy()
-        pos = textbuffer.get_property('cursor-position')
-        cur_iter = textbuffer.get_iter_at_offset(pos)
-        found = cur_iter.forward_search(search,flags=0)
-        if found:
-           match_start,match_end = found
-           textbuffer.select_range(match_start,match_end)
-           textview.scroll_to_iter(match_start,0.1)
-        else:
-            #loop around to beginning, stopping at cursor position
-            start_iter = textbuffer.get_start_iter()
-            found = start_iter.forward_search(search,flags=0,limit=cur_iter)
-            if found:
-               match_start,match_end = found
-               textbuffer.select_range(match_start,match_end)
-               textview.scroll_to_iter(match_start,0.1)
+        done = False
+        while not done:
+            response = dialog.run()
+            search = ""
+            if response == gtk.RESPONSE_ACCEPT:
+                search = entry.get_text()
+                self.last_find = search
+                bounds = textbuffer.get_selection_bounds()
+                if bounds:
+                    cur_iter = bounds[1]
+                else:
+                    cur_iter = textbuffer.get_iter_at_mark(textbuffer.get_insert())
+                found = cur_iter.forward_search(search,flags=0)
+                if found:
+                   match_start,match_end = found
+                   textbuffer.select_range(match_start,match_end)
+                   textview.scroll_to_iter(match_start,0.1)
+                else:
+                    #loop around to beginning, stopping at cursor position
+                    start_iter = textbuffer.get_start_iter()
+                    found = start_iter.forward_search(search,flags=0,limit=cur_iter)
+                    if found:
+                       match_start,match_end = found
+                       textbuffer.select_range(match_start,match_end)
+                       textview.scroll_to_iter(match_start,0.1)
+            else:
+                done = True
+                dialog.destroy()  
 
     def on_menu_item_replace_activate(self,widget,data=None):
         print('on_menu_item_replace_activate')
@@ -317,13 +332,16 @@ class TextEditor(object):
                     flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                     buttons = ('Goto',gtk.RESPONSE_ACCEPT))
         entry = gtk.Entry()
+        entry.set_text(self.last_goto)
         dialog.add_action_widget(entry,gtk.RESPONSE_ACCEPT)
         box = dialog.get_action_area()
         box.reorder_child(entry,0)
         entry.show()
         response = dialog.run()
+        line = 0
         if response == gtk.RESPONSE_ACCEPT:
             line = entry.get_text()
+            self.last_goto = line
         dialog.destroy()
         if line:
             try:

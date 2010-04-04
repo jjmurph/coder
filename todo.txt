@@ -3,5 +3,6 @@ add find and replace
 
 opening a file should default to the directory of the current tab's file
 
+add ability to comment out a block of lines
 
 
