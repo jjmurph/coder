@@ -284,6 +284,7 @@ class TextEditor(object):
                     parent = self.window,
                     flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                     buttons = ('Find',gtk.RESPONSE_ACCEPT))
+        dialog.set_property('resizable',False)
         entry = gtk.Entry()
         entry.set_text(self.last_find)
         dialog.add_action_widget(entry,gtk.RESPONSE_ACCEPT)
@@ -320,7 +321,89 @@ class TextEditor(object):
                 dialog.destroy()  
 
     def on_menu_item_replace_activate(self,widget,data=None):
-        print('on_menu_item_replace_activate')
+        tab = self.current_tab()
+        textview = tab.get_textview()
+        textbuffer = textview.get_buffer()
+        RESPONSE_FIND = 1
+        RESPONSE_REPLACE = 2
+        dialog = gtk.Dialog(
+                    title = 'Find & Replace',
+                    parent = self.window,
+                    flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                    buttons = ('Find',RESPONSE_FIND,
+                               'Replace',RESPONSE_REPLACE))
+        dialog.set_property('resizable',False)
+        find_label = gtk.Label('Find')
+        find_entry = gtk.Entry()
+        find_entry.set_text(self.last_find)
+        replace_label = gtk.Label('Replace')
+        replace_entry = gtk.Entry()
+        replace_entry.set_text(self.last_replace)
+        table = gtk.Table(2,2)
+        table.attach(find_label,0,1,0,1)
+        table.attach(find_entry,1,2,0,1)
+        table.attach(replace_label,0,1,1,2)
+        table.attach(replace_entry,1,2,1,2)
+        table.set_col_spacing(0,10)
+        box = dialog.get_content_area()
+        box.pack_start(table,fill=False,expand=False,padding=0)
+        box.show_all()
+        done = False
+        while not done:
+            response = dialog.run()
+            find = ""
+            replace = ""
+            if response == RESPONSE_FIND or response == RESPONSE_REPLACE:
+                find = find_entry.get_text()
+                replace = replace_entry.get_text()
+                self.last_find = find
+                self.last_replace = replace
+                bounds = textbuffer.get_selection_bounds()
+                if response == RESPONSE_FIND and bounds:
+                    cur_iter = bounds[1]
+                else:
+                    cur_iter = textbuffer.get_iter_at_mark(textbuffer.get_insert())
+                found = cur_iter.forward_search(find,flags=0)
+                if found:
+                   match_start,match_end = found
+                   textbuffer.select_range(match_start,match_end)
+                   textview.scroll_to_iter(match_start,0.1)
+                   if response == RESPONSE_REPLACE:
+                       textbuffer.insert(match_start,replace)
+                       textbuffer.delete_selection(1,1)
+                else:
+                    #loop around to beginning, stopping at cursor position
+                    start_iter = textbuffer.get_start_iter()
+                    found = start_iter.forward_search(find,flags=0,limit=cur_iter)
+                    if found:
+                       match_start,match_end = found
+                       textbuffer.select_range(match_start,match_end)
+                       textview.scroll_to_iter(match_start,0.1)
+                       if response == RESPONSE_REPLACE:
+                           textbuffer.insert(match_start,replace)
+                           textbuffer.delete_selection(1,1)
+                if response == RESPONSE_REPLACE:
+                    bounds = textbuffer.get_selection_bounds()
+                    if bounds:
+                        cur_iter = bounds[1]
+                    else:
+                        cur_iter = textbuffer.get_iter_at_mark(textbuffer.get_insert())
+                    found = cur_iter.forward_search(find,flags=0)
+                    if found:
+                       match_start,match_end = found
+                       textbuffer.select_range(match_start,match_end)
+                       textview.scroll_to_iter(match_start,0.1)
+                    else:
+                        #loop around to beginning, stopping at cursor position
+                        start_iter = textbuffer.get_start_iter()
+                        found = start_iter.forward_search(find,flags=0,limit=cur_iter)
+                        if found:
+                           match_start,match_end = found
+                           textbuffer.select_range(match_start,match_end)
+                           textview.scroll_to_iter(match_start,0.1)
+            else:
+                done = True
+                dialog.destroy()
 
     def on_menu_item_goto_activate(self,widget,data=None):
         tab = self.current_tab()
@@ -331,6 +414,7 @@ class TextEditor(object):
                     parent= self.window,
                     flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                     buttons = ('Goto',gtk.RESPONSE_ACCEPT))
+        dialog.set_property('resizable',False)
         entry = gtk.Entry()
         entry.set_text(self.last_goto)
         dialog.add_action_widget(entry,gtk.RESPONSE_ACCEPT)
