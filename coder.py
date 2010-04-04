@@ -111,7 +111,7 @@ class TextEditor(object):
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
-	    ### Search Menu ###
+        ### Search Menu ###
         menu_item = gtk.MenuItem(label='_Search',use_underline=True)
         menu = gtk.Menu()
         item = gtk.ImageMenuItem(gtk.STOCK_FIND,accelgroup)
@@ -130,7 +130,7 @@ class TextEditor(object):
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
-    	### Tools Menu ###
+        ### Tools Menu ###
         menu_item = gtk.MenuItem(label='_Tools',use_underline=True)
         menu = gtk.Menu()
         item = gtk.ImageMenuItem('_Run')
@@ -308,8 +308,37 @@ class TextEditor(object):
         print('on_menu_item_replace_activate')
 
     def on_menu_item_goto_activate(self,widget,data=None):
-        print('on_menu_item_goto_activate')
-        
+        tab = self.current_tab()
+        textview = tab.get_textview()
+        textbuffer = textview.get_buffer()
+        dialog = gtk.Dialog(
+                    title = 'Goto Line',
+                    parent= self.window,
+                    flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                    buttons = ('Goto',gtk.RESPONSE_ACCEPT))
+        entry = gtk.Entry()
+        dialog.add_action_widget(entry,gtk.RESPONSE_ACCEPT)
+        box = dialog.get_action_area()
+        box.reorder_child(entry,0)
+        entry.show()
+        response = dialog.run()
+        if response == gtk.RESPONSE_ACCEPT:
+            line = entry.get_text()
+        dialog.destroy()
+        if line:
+            try:
+                line_num = int(line)
+                line_num = line_num - 1
+            except:
+                line_num = ''
+            if line_num is not '' and line_num >= 0:
+                try:
+                    textiter = textbuffer.get_iter_at_line(line_num)
+                    textbuffer.place_cursor(textiter)
+                    textview.scroll_to_iter(textiter,0.1)
+                except OverflowError:
+                    pass
+
     ### tools menu signal handlers ###
 
     def on_menu_item_run_activate(self,widget,data=None):
@@ -455,7 +484,7 @@ class TextEditor(object):
                     quit = False
             if quit:
                 self.notebook.remove_page(page)
-                self.tabs.remove(tab)		    	
+                self.tabs.remove(tab)                
 
     def ok_to_close_tab(self):
         dialog = gtk.MessageDialog(parent=self.window,
@@ -588,7 +617,7 @@ class Tab(object):
             self.update_statusbar()
 
     def update_statusbar(self):
-        status = '%s       Line: %s  Col: %s' % (self.filename,self.line,self.col)
+        status = '%s       Line: %s  Col: %s' % (self.filename,self.line+1,self.col+1)
         context_id = self.statusbar.get_context_id("status")
         self.statusbar.pop(context_id)
         self.statusbar.push(context_id,status)        
