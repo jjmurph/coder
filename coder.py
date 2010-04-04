@@ -294,6 +294,7 @@ class TextEditor(object):
         if found:
            match_start,match_end = found
            textbuffer.select_range(match_start,match_end)
+           textview.scroll_to_iter(match_start,0.1)
         else:
             #loop around to beginning, stopping at cursor position
             start_iter = textbuffer.get_start_iter()
@@ -301,6 +302,7 @@ class TextEditor(object):
             if found:
                match_start,match_end = found
                textbuffer.select_range(match_start,match_end)
+               textview.scroll_to_iter(match_start,0.1)
 
     def on_menu_item_replace_activate(self,widget,data=None):
         print('on_menu_item_replace_activate')
