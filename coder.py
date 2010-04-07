@@ -760,11 +760,11 @@ class Tab(object):
             for line in range(start_line,end_line+1):
                 textiter = self.textbuffer.get_iter_at_line_offset(line,0)
                 if reverse:
-                    # TODO: need to make sure this offset is valid
-                    textiter_end = self.textbuffer.get_iter_at_line_offset(line,4)
-                    text = self.textbuffer.get_text(textiter,textiter_end,True)
-                    if text == tab:
-                        self.textbuffer.delete(textiter,textiter_end)
+                    if textiter.get_chars_in_line() >= 5:
+                        textiter_end = self.textbuffer.get_iter_at_line_offset(line,4)
+                        text = self.textbuffer.get_text(textiter,textiter_end,True)
+                        if text == tab:
+                            self.textbuffer.delete(textiter,textiter_end)
                 else:
                     self.textbuffer.insert(textiter,tab)
         else:
@@ -802,11 +802,13 @@ class Tab(object):
             end_line = start_line
         for line in range(start_line,end_line+1):
             textiter_start = self.textbuffer.get_iter_at_line_offset(line,0)
-            # TODO: need to make sure this offset is valid
-            textiter_end = self.textbuffer.get_iter_at_line_offset(line,1)
-            text = self.textbuffer.get_text(textiter_start,textiter_end,True)
-            if text == comment:
-                self.textbuffer.delete(textiter_start,textiter_end)
+            if textiter_start.get_chars_in_line() >= 2:
+                textiter_end = self.textbuffer.get_iter_at_line_offset(line,1)
+                text = self.textbuffer.get_text(textiter_start,textiter_end,True)
+                if text == comment:
+                    self.textbuffer.delete(textiter_start,textiter_end)
+                else:
+                    self.textbuffer.insert(textiter_start,comment)
             else:
                 self.textbuffer.insert(textiter_start,comment)
 
