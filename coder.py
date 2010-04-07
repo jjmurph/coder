@@ -680,12 +680,12 @@ class Tab(object):
         if SOURCE_VIEW:
             self.textbuffer = gtksourceview2.Buffer()
             self.textbuffer.set_style_scheme(Tab.scheme)
-            self.textbuffer.create_tag('font',font='Monospace 10')
-            self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
             self.textview = gtksourceview2.View(self.textbuffer)
         else:
             self.textbuffer = gtk.TextBuffer()
             self.textview = gtk.TextView(self.textbuffer)
+        self.textbuffer.create_tag('font',font='Monospace 10')
+        self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
         self.textview.connect('event',self.textview_event)
         self.textview.connect('event-after',self.textview_event_after)
         self.textbuffer.connect('modified-changed',self.buffer_modified_changed)
