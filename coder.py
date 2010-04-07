@@ -201,9 +201,11 @@ class TextEditor(object):
         if data.state & gtk.gdk.CONTROL_MASK:
             if keyname == 'Tab':
                 self.next_tab()
+                return True
             if data.state & gtk.gdk.SHIFT_MASK:
                 if keyname == 'ISO_Left_Tab':
                     self.prev_tab()
+                    return True
 
     ### file menu handlers ###
 

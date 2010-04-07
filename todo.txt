@@ -1,6 +1,3 @@
 
 opening a file should default to the directory of the current tab's file
 
-hitting enter should auto-indent
-
-switching tabs in the notebook should stop the tab keypress from reaching the text
