@@ -145,6 +145,11 @@ class TextEditor(object):
         item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)        
         item.connect('activate',self.on_menu_item_run_activate)                
         menu.append(item)
+        item = gtk.ImageMenuItem('Replace _Tabs with Spaces')
+        image = gtk.image_new_from_stock(gtk.STOCK_GO_FORWARD,gtk.ICON_SIZE_MENU)
+        item.set_image(image)
+        item.connect('activate',self.on_menu_item_tabs_activate)
+        menu.append(item)        
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
@@ -456,6 +461,19 @@ class TextEditor(object):
                     except OSError as e:
                         print e
     
+    def on_menu_item_tabs_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            textview = tab.get_textview()
+            textbuffer = textview.get_buffer()
+            textview.set_sensitive(False)
+            start = textbuffer.get_start_iter()
+            end = textbuffer.get_end_iter()
+            text = textbuffer.get_text(start,end,True)
+            text = re.sub('\t','    ',text)
+            textbuffer.set_text(text)
+            textview.set_sensitive(True)
+            
     ### notebook signal handlers ###
 
     def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
@@ -660,9 +678,8 @@ class Tab(object):
         self.textview.connect('event-after',self.textview_event_after)
         self.textbuffer.connect('modified-changed',self.buffer_modified_changed)
         self.textbuffer.connect('changed',self.buffer_changed)
-        self.buffer_insert_after_handle = self.textbuffer.connect_after('insert-text',self.buffer_insert_after)
         self.window.add(self.textview)
-        self.label = gtk.Label("New Document")        
+        self.label = gtk.Label("New Document")
     
     def get_window(self):
         return self.window
@@ -792,19 +809,6 @@ class Tab(object):
     def buffer_changed(self,widget):
         self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
 
-    def buffer_insert_after(self,widget,textiter,text,length,data=None):
-        if False:
-            #'replaces tabs with 4 spaces'
-            if '\t' in text:
-                self.textbuffer.disconnect(self.buffer_insert_after_handle)
-                end = textiter.copy()
-                start = textiter.copy()
-                start.backward_chars(length)
-                self.textbuffer.delete(start,end)
-                text = re.sub('\t','    ',text)
-                self.textbuffer.insert_at_cursor(text)
-                self.buffer_insert_after_handle = self.textbuffer.connect_after('insert-text',self.buffer_insert_after)
-                    
     def has_unsaved_changes(self):
         return self.changed
 
