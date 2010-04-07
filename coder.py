@@ -734,7 +734,10 @@ class Tab(object):
         self.textbuffer.set_language(language)
 
     def textview_event(self,widget,event,data=None):
-        'Intercepts tab keypresses and redirects to the indent function'
+        '''
+        Intercepts tab keypresses and redirects to the indent function
+        Intercepts return keypresses and redirects to the autoindent function
+        '''
         if event.type == gtk.gdk.KEY_PRESS:
             keyname = gtk.gdk.keyval_name(event.keyval)
             if keyname == 'Tab':
@@ -742,6 +745,9 @@ class Tab(object):
                 return True
             elif keyname == 'ISO_Left_Tab' and (event.state & gtk.gdk.SHIFT_MASK):
                 self.indent(reverse=True)
+                return True
+            elif keyname == 'Return':
+                self.autoindent()
                 return True
 
     def indent(self,reverse=False):
@@ -781,6 +787,31 @@ class Tab(object):
                         self.textbuffer.delete(textiter,textiter_end)
             else:
                 self.textbuffer.insert_at_cursor(tab)
+
+    def autoindent(self):
+        '''
+        Auto indents the next line to line up with the previous one.
+        If the previous line ends in ':', then an extra tab (4 spaces) is added.
+        '''
+        self.textbuffer.insert_at_cursor('\n')
+        textiter = self.textbuffer.get_iter_at_mark(self.textbuffer.get_insert())
+        line = textiter.get_line()
+        if line > 0:
+            textiter = self.textbuffer.get_iter_at_line_offset(line-1,0)
+            textiter_end = textiter.copy()
+            if textiter_end.forward_to_line_end():
+                text = self.textbuffer.get_text(textiter,textiter_end,True)
+                spaces = 0
+                for c in text:
+                    if c == ' ':
+                        spaces = spaces + 1
+                    else:
+                        break
+                if text[-1] == ':':
+                    spaces = spaces + 4
+                if spaces > 0:
+                    text = ' ' * spaces
+                    self.textbuffer.insert_at_cursor(text)
 
     def comment(self):
         '''
