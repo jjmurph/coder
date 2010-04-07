@@ -656,6 +656,7 @@ class Tab(object):
         else:
             self.textbuffer = gtk.TextBuffer()
             self.textview = gtk.TextView(self.textbuffer)
+        self.textview.connect('event',self.textview_event)
         self.textview.connect('event-after',self.textview_event_after)
         self.textbuffer.connect('modified-changed',self.buffer_modified_changed)
         self.textbuffer.connect('changed',self.buffer_changed)
@@ -703,6 +704,54 @@ class Tab(object):
         language = Tab.source_language_manager.get_language(lang_id)
         self.textbuffer.set_language(language)
 
+    def textview_event(self,widget,event,data=None):
+        'Intercepts tab keypresses and redirects to the indent function'
+        if event.type == gtk.gdk.KEY_PRESS:
+            keyname = gtk.gdk.keyval_name(event.keyval)
+            if keyname == 'Tab':
+                self.indent()
+                return True
+            elif keyname == 'ISO_Left_Tab' and (event.state & gtk.gdk.SHIFT_MASK):
+                self.indent(reverse=True)
+                return True
+
+    def indent(self,reverse=False):
+        '''
+        Replaces tabs with 4 spaces.
+        Set reverse to True to unindent.
+        If multiple lines are selected the whole block will be indented/unindented.
+        '''
+        tab = '    ' # 4 spaces
+        bounds = self.textbuffer.get_selection_bounds()
+        if bounds:
+            # a block is selected, indent/unindent the entire line(s)
+            start,end = bounds
+            start_line = start.get_line()
+            end_line = end.get_line()
+            for line in range(start_line,end_line+1):
+                textiter = self.textbuffer.get_iter_at_line_offset(line,0)
+                if reverse:
+                    textiter_end = self.textbuffer.get_iter_at_line_offset(line,4)
+                    text = self.textbuffer.get_text(textiter,textiter_end,True)
+                    if text == tab:
+                        self.textbuffer.delete(textiter,textiter_end)
+                else:
+                    self.textbuffer.insert(textiter,tab)
+        else:
+            # there's no selection, just replace the tab with 4 spaces
+            # if unindenting, check if there are 4 spaces before the cursor and if so, delete them
+            if reverse:
+                textiter_end = self.textbuffer.get_iter_at_mark(self.textbuffer.get_insert())
+                line = textiter_end.get_line()
+                col = textiter_end.get_line_offset() - 4
+                if col >= 0:
+                    textiter = self.textbuffer.get_iter_at_line_offset(line,col)
+                    text = self.textbuffer.get_text(textiter,textiter_end,True)
+                    if text == tab:
+                        self.textbuffer.delete(textiter,textiter_end)
+            else:
+                self.textbuffer.insert_at_cursor(tab)
+
     def textview_event_after(self,widget,event,data=None):
         pos = self.textbuffer.get_property('cursor-position')
         textiter = self.textbuffer.get_iter_at_offset(pos)
@@ -744,16 +793,17 @@ class Tab(object):
         self.textbuffer.apply_tag_by_name('font',self.textbuffer.get_start_iter(),self.textbuffer.get_end_iter())
 
     def buffer_insert_after(self,widget,textiter,text,length,data=None):
-        'replaces tabs with 4 spaces'
-        if '\t' in text:
-            self.textbuffer.disconnect(self.buffer_insert_after_handle)
-            end = textiter.copy()
-            start = textiter.copy()
-            start.backward_chars(length)
-            self.textbuffer.delete(start,end)
-            text = re.sub('\t','    ',text)
-            self.textbuffer.insert_at_cursor(text)
-            self.buffer_insert_after_handle = self.textbuffer.connect_after('insert-text',self.buffer_insert_after)
+        if False:
+            #'replaces tabs with 4 spaces'
+            if '\t' in text:
+                self.textbuffer.disconnect(self.buffer_insert_after_handle)
+                end = textiter.copy()
+                start = textiter.copy()
+                start.backward_chars(length)
+                self.textbuffer.delete(start,end)
+                text = re.sub('\t','    ',text)
+                self.textbuffer.insert_at_cursor(text)
+                self.buffer_insert_after_handle = self.textbuffer.connect_after('insert-text',self.buffer_insert_after)
                     
     def has_unsaved_changes(self):
         return self.changed
