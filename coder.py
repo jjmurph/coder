@@ -2,9 +2,14 @@
 
 import sys
 import os
-import gtk
 import subprocess
 import re
+
+try:
+    import gtk
+except ImportError:
+    print 'This program requires pygtk'
+    sys.exit()
 
 # try to import gtksourceview2
 # if it doesn't exist then we'll just use a normal text view
