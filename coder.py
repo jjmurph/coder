@@ -149,7 +149,14 @@ class TextEditor(object):
         image = gtk.image_new_from_stock(gtk.STOCK_GO_FORWARD,gtk.ICON_SIZE_MENU)
         item.set_image(image)
         item.connect('activate',self.on_menu_item_tabs_activate)
-        menu.append(item)        
+        menu.append(item)
+        item = gtk.ImageMenuItem('Toggle Comments')
+        image = gtk.image_new_from_stock(gtk.STOCK_REMOVE,gtk.ICON_SIZE_MENU)
+        item.set_image(image)
+        key, mod = gtk.accelerator_parse('<Ctrl>D')
+        item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
+        item.connect('activate',self.on_menu_item_comment_activate)
+        menu.append(item)
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
@@ -473,7 +480,12 @@ class TextEditor(object):
             text = re.sub('\t','    ',text)
             textbuffer.set_text(text)
             textview.set_sensitive(True)
-            
+   
+    def on_menu_item_comment_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            tab.comment()
+         
     ### notebook signal handlers ###
 
     def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
@@ -748,6 +760,7 @@ class Tab(object):
             for line in range(start_line,end_line+1):
                 textiter = self.textbuffer.get_iter_at_line_offset(line,0)
                 if reverse:
+                    # TODO: need to make sure this offset is valid
                     textiter_end = self.textbuffer.get_iter_at_line_offset(line,4)
                     text = self.textbuffer.get_text(textiter,textiter_end,True)
                     if text == tab:
@@ -768,6 +781,34 @@ class Tab(object):
                         self.textbuffer.delete(textiter,textiter_end)
             else:
                 self.textbuffer.insert_at_cursor(tab)
+
+    def comment(self):
+        '''
+        Set the first character of the current/highlighted lines to '#'.
+        If it already is set then remove it.
+        '''
+        comment = '#'
+        bounds = self.textbuffer.get_selection_bounds()
+        start_line = None
+        end_line = None
+        if bounds:
+            # a block is selected, comment all of the lines
+            start,end = bounds
+            start_line = start.get_line()
+            end_line = end.get_line()
+        else:
+            textiter = self.textbuffer.get_iter_at_mark(self.textbuffer.get_insert())
+            start_line = textiter.get_line()
+            end_line = start_line
+        for line in range(start_line,end_line+1):
+            textiter_start = self.textbuffer.get_iter_at_line_offset(line,0)
+            # TODO: need to make sure this offset is valid
+            textiter_end = self.textbuffer.get_iter_at_line_offset(line,1)
+            text = self.textbuffer.get_text(textiter_start,textiter_end,True)
+            if text == comment:
+                self.textbuffer.delete(textiter_start,textiter_end)
+            else:
+                self.textbuffer.insert(textiter_start,comment)
 
     def textview_event_after(self,widget,event,data=None):
         pos = self.textbuffer.get_property('cursor-position')
