@@ -1,0 +1,4 @@
+Coder is a simple programming editor written in Python
+
+Requires gtk and gtksourceview2
+
