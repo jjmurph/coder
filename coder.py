@@ -218,6 +218,11 @@ class TextEditor(object):
                         action = gtk.FILE_CHOOSER_ACTION_OPEN,
                         buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                                    gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        if self.tabs:
+            tab = self.current_tab()
+            current_file = tab.get_filename()
+            current_folder = os.path.dirname(current_file)
+            file_chooser.set_current_folder(current_folder)
         response = file_chooser.run()
         if response == gtk.RESPONSE_ACCEPT:
             #if there's only the original "New Document" tab
