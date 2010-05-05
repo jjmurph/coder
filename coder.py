@@ -125,10 +125,10 @@ class TextEditor(object):
         menu_item = gtk.MenuItem(label='_Search',use_underline=True)
         menu = gtk.Menu()
         item = gtk.ImageMenuItem(gtk.STOCK_FIND,accelgroup)
-        item.connect('activate',self.on_menu_item_find_activate)                
+        item.connect('activate',self.on_menu_item_find_activate)
         menu.append(item)
         item = gtk.ImageMenuItem(gtk.STOCK_FIND_AND_REPLACE,accelgroup)
-        item.connect('activate',self.on_menu_item_replace_activate)                
+        item.connect('activate',self.on_menu_item_replace_activate)
         menu.append(item)
         item = gtk.ImageMenuItem('_Goto Line')
         image = gtk.image_new_from_stock(gtk.STOCK_JUMP_TO,gtk.ICON_SIZE_MENU)
@@ -309,12 +309,23 @@ class TextEditor(object):
                     flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                     buttons = ('Find',gtk.RESPONSE_ACCEPT))
         dialog.set_property('resizable',False)
+        label = gtk.Label('Find')
         entry = gtk.Entry()
         entry.set_text(self.last_find)
+        # we want the text entry to emit the response but we don't want it
+        # in the action area (where the buttons are)
         dialog.add_action_widget(entry,gtk.RESPONSE_ACCEPT)
-        box = dialog.get_action_area()
-        box.reorder_child(entry,0)
-        entry.show()
+        action_area = dialog.get_action_area()
+        action_area.remove(entry)
+        # add the label and text entry to a table
+        table = gtk.Table(2,2)
+        table.attach(label,0,1,0,1)
+        table.attach(entry,1,2,0,1)
+        table.set_col_spacing(0,10)
+        # add the table to the context area
+        box = dialog.get_content_area()
+        box.pack_start(table,fill=False,expand=False,padding=0)
+        box.show_all()
         done = False
         while not done:
             response = dialog.run()
