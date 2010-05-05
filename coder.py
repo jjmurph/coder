@@ -220,9 +220,7 @@ class TextEditor(object):
                                    gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
         if self.tabs:
             tab = self.current_tab()
-            current_file = tab.get_filename()
-            current_folder = os.path.dirname(current_file)
-            file_chooser.set_current_folder(current_folder)
+            file_chooser.set_current_folder(tab.get_current_folder())
         response = file_chooser.run()
         if response == gtk.RESPONSE_ACCEPT:
             #if there's only the original "New Document" tab
@@ -255,6 +253,8 @@ class TextEditor(object):
                             action = gtk.FILE_CHOOSER_ACTION_SAVE,
                             buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                                     gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+            tab = self.current_tab()
+            file_chooser.set_current_folder(tab.get_current_folder())
             response = file_chooser.run()
             if response == gtk.RESPONSE_ACCEPT:
                 filename = file_chooser.get_filename()
@@ -544,7 +544,12 @@ class TextEditor(object):
             return -1
 
     def new_tab(self):
-        tab = Tab(self.notebook,self.statusbar)
+        if self.tabs:
+            previous_tab = self.current_tab()
+            current_folder = previous_tab.get_current_folder()
+        else:
+            current_folder = os.curdir
+        tab = Tab(self.notebook,self.statusbar,current_folder)
         self.tabs.append(tab)
         self.notebook.set_current_page(len(self.tabs)-1)
         #reset the flag to indicate that we no longer
@@ -672,9 +677,10 @@ class Tab(object):
         style_scheme_manager.prepend_search_path(styles_path)
         scheme = style_scheme_manager.get_scheme('coder')
             
-    def __init__(self,notebook,statusbar):
+    def __init__(self,notebook,statusbar,starting_folder):
         self.notebook = notebook
         self.statusbar = statusbar
+        self.starting_folder = starting_folder
         self.filename = ""
         self.changed = 0
         self.line = 0
@@ -726,6 +732,12 @@ class Tab(object):
         self.label.set_text(os.path.basename(filename))
         self.notebook.set_tab_label(self.window,self.label)
         self.update_source_buffer(filename)
+
+    def get_current_folder(self):
+        if self.filename:
+            return os.path.dirname(self.filename)
+        else:
+            return self.starting_folder
 
     def update_source_buffer(self,filename):
         'Set the syntax highlighting based on filename'
