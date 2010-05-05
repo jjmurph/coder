@@ -761,6 +761,7 @@ class Tab(object):
         '''
         Intercepts tab keypresses and redirects to the indent function
         Intercepts return keypresses and redirects to the autoindent function
+        Intercepts backspace keypresses and redirect to the backspace function
         '''
         if event.type == gtk.gdk.KEY_PRESS:
             keyname = gtk.gdk.keyval_name(event.keyval)
@@ -773,6 +774,8 @@ class Tab(object):
             elif keyname == 'Return':
                 self.autoindent()
                 return True
+            elif keyname == 'BackSpace':
+                return self.backspace()
 
     def indent(self,reverse=False):
         '''
@@ -837,6 +840,31 @@ class Tab(object):
                     text = ' ' * spaces
                     self.textbuffer.insert_at_cursor(text)
 
+    def backspace(self):
+        '''
+        If the user hits backspace and there's a tab (4 spaces) behind the
+        cursor, delete all 4 of those spaces (the whole tab).
+        Else, return False and let the normal signal handler deal with it.
+        '''
+        tab = '    ' # 4 spaces
+        bounds = self.textbuffer.get_selection_bounds()
+        if bounds:
+            # a block is selected, just do a normal backspace
+            return False
+        else:
+            textiter_end = self.textbuffer.get_iter_at_mark(self.textbuffer.get_insert())
+            line = textiter_end.get_line()
+            col = textiter_end.get_line_offset() - 4
+            if col >= 0:
+                textiter = self.textbuffer.get_iter_at_line_offset(line,col)
+                text = self.textbuffer.get_text(textiter,textiter_end,True)
+                if text == tab:
+                    self.textbuffer.delete(textiter,textiter_end)
+                    return True
+                else:
+                    return False
+            return False
+
     def comment(self):
         '''
         Set the first character of the current/highlighted lines to '#'.
@@ -868,6 +896,9 @@ class Tab(object):
                 self.textbuffer.insert(textiter_start,comment)
 
     def textview_event_after(self,widget,event,data=None):
+        '''
+        Updates the cursor position if it changed.
+        '''
         pos = self.textbuffer.get_property('cursor-position')
         textiter = self.textbuffer.get_iter_at_offset(pos)
         line = textiter.get_line()
