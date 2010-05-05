@@ -1,0 +1,26 @@
+
+Features to add:
+    
+tweak the style so strings aren't so dark
+
+opening a file should load it in the current running instance of the program,
+not start a new one
+
+need an icon
+
+add a context menu to the tab buttons
+
+add the rest of the supported languages
+
+add text marks for jumping around the file
+
+when starting the program focus should go to the text view
+
+reword and change the buttons on the close/quit confirmation boxes
+
+add a small left margin to the text view
+
+when switching tabs or switching back to the program
+check if any changes have been made to the file
+
+
