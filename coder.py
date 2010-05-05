@@ -685,9 +685,16 @@ class Tab(object):
         style_scheme_manager = gtksourceview2.style_scheme_manager_get_default()
         cur_path = os.path.abspath(sys.path[0])
         styles_path = os.path.join(cur_path,'styles')
-        style_scheme_manager.prepend_search_path(styles_path)
-        scheme = style_scheme_manager.get_scheme('coder')
-            
+        scheme = None
+        if os.path.exists(styles_path):
+            style_scheme_manager.prepend_search_path(styles_path)
+            style = 'coder'
+            scheme = style_scheme_manager.get_scheme(style)
+            if not scheme:
+                print("Couldn't load style: %s" % style)
+        else:
+            print("Couldn't find styles directory")
+
     def __init__(self,notebook,statusbar,starting_folder):
         self.notebook = notebook
         self.statusbar = statusbar
@@ -708,7 +715,8 @@ class Tab(object):
         self.window.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
         if SOURCE_VIEW:
             self.textbuffer = gtksourceview2.Buffer()
-            self.textbuffer.set_style_scheme(Tab.scheme)
+            if Tab.scheme:
+                self.textbuffer.set_style_scheme(Tab.scheme)
             self.textview = gtksourceview2.View(self.textbuffer)
         else:
             self.textbuffer = gtk.TextBuffer()
