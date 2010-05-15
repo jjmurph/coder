@@ -563,6 +563,7 @@ class TextEditor(object):
         tab = Tab(self.notebook,self.statusbar,current_folder)
         self.tabs.append(tab)
         self.notebook.set_current_page(len(self.tabs)-1)
+        tab.focus()
         #reset the flag to indicate that we no longer
         #have just the original "New Document" tab
         self.only_first_tab = 0
@@ -617,6 +618,7 @@ class TextEditor(object):
         tab.set_filename(filename)
         textbuffer.set_modified(new_file)
         tab.update_statusbar()
+        tab.focus()
 
     def save_file(self,filename):
         if filename:
@@ -709,7 +711,6 @@ class Tab(object):
         self.notebook.append_page(self.window,self.label)
         self.window.show()
         self.textview.show()
-        self.focus()
     
     def create_widgets(self):
         'Creates the Scrolled Window, Text View, and Label'
@@ -965,7 +966,6 @@ class Tab(object):
         return self.changed
 
     def focus(self):
-        # this should set focus to the textview but doesn't always work
         self.textview.grab_focus()
 
 def main(filenames=[]):

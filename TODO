@@ -14,11 +14,7 @@ add the rest of the supported languages
 
 add text marks for jumping around the file
 
-when starting the program focus should go to the text view
-
 reword and change the buttons on the close/quit confirmation boxes
-
-add a small left margin to the text view
 
 when switching tabs or switching back to the program
 check if any changes have been made to the file
