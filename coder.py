@@ -860,8 +860,8 @@ class Tab(object):
                 if spaces > 0:
                     text = ' ' * spaces
                     self.textbuffer.insert_at_cursor(text)
-            textiter = self.textbuffer.get_iter_at_line_offset(line,0)
-            self.textview.scroll_to_iter(textiter,0.0)
+        textmark = self.textbuffer.get_mark('insert')
+        self.textview.scroll_mark_onscreen(textmark)
 
     def backspace(self):
         '''
@@ -980,5 +980,3 @@ def main(filenames=[]):
 if __name__ == "__main__":
     filenames = sys.argv[1:]
     main(filenames)
-        
-
