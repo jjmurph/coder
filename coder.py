@@ -615,7 +615,7 @@ class TextEditor(object):
         textbuffer.place_cursor(start)
         textview.set_sensitive(True)
         tab.set_filename(filename)
-        self.textbuffer.set_modified(new_file)
+        textbuffer.set_modified(new_file)
         tab.update_statusbar()
 
     def save_file(self,filename):
@@ -860,6 +860,8 @@ class Tab(object):
                 if spaces > 0:
                     text = ' ' * spaces
                     self.textbuffer.insert_at_cursor(text)
+            textiter = self.textbuffer.get_iter_at_line_offset(line,0)
+            self.textview.scroll_to_iter(textiter,0.0)
 
     def backspace(self):
         '''
