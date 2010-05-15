@@ -598,23 +598,25 @@ class TextEditor(object):
                 self.current_tab().focus()
    
     def load_file(self,filename):
+        new_file = False
         try:
             f = open(filename,'r')
             text = f.read()
             f.close()
-            tab = self.current_tab()
-            textview = tab.get_textview()
-            textbuffer = textview.get_buffer()
-            textview.set_sensitive(False)
-            textbuffer.set_text(text)
-            start = textbuffer.get_start_iter()
-            textbuffer.place_cursor(start)
-            textbuffer.set_modified(False)
-            textview.set_sensitive(True)
-            tab.set_filename(filename)
-            tab.update_statusbar()
         except IOError as e:
-            print("Couldn't open file %s" % filename)
+            text = ""
+            new_file = True
+        tab = self.current_tab()
+        textview = tab.get_textview()
+        textbuffer = textview.get_buffer()
+        textview.set_sensitive(False)
+        textbuffer.set_text(text)
+        start = textbuffer.get_start_iter()
+        textbuffer.place_cursor(start)
+        textview.set_sensitive(True)
+        tab.set_filename(filename)
+        self.textbuffer.set_modified(new_file)
+        tab.update_statusbar()
 
     def save_file(self,filename):
         if filename:
