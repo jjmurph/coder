@@ -3,22 +3,23 @@
 <style-scheme id="coder" _name="Coder" version="1.0">
 
   <color name="white"                       value="#ffffff"/>
-  <color name="dark"                        value="#222222"/>
+  <color name="dark"                        value="#3D3D3D"/>
   <color name="light"                       value="#CCCCCC"/>
   <color name="grey"                        value="#808080"/>
-  <color name="green"                       value="#2E8B57"/>
-  <color name="light_green"                 value="#3ad900"/>
+  <color name="green"                       value="#00B82E"/>
+  <color name="light_green"                 value="#C2FFA8"/>
   <color name="red"                         value="#FF0000"/>
-
+  <color name="blue"                        value="#A8EEFF"/>  
+  
   <style name="text"                        foreground="white" background="dark"/>
   <style name="selection"                   background="grey"/>
   <style name="cursor"                      foreground="white"/>
   <style name="bracket-match"               foreground="red"/>
-  <style name="def:comment"                 foreground="light_green"/>
+  <style name="def:comment"                 foreground="green"/>
   <style name="def:constant"                foreground="light"/>
-  <style name="def:string"                  foreground="green"/>
-  <style name="def:identifier"              foreground="light"/>
-  <style name="def:statement"               foreground="light"/>
+  <style name="def:string"                  foreground="light_green"/>
+  <style name="def:identifier"              foreground="blue"/>
+  <style name="def:statement"               foreground="blue"/>
   <style name="def:type"                    foreground="light"/>
   <style name="python:special-variable"     use-style="def:type"/>
   <style name="python:builtin-constant"     use-style="def:type"/>
