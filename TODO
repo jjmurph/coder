@@ -1,12 +1,8 @@
 
 Features to add:
     
-tweak the style so strings aren't so dark
-
 opening a file should load it in the current running instance of the program,
 not start a new one
-
-need an icon
 
 add a context menu to the tab buttons
 

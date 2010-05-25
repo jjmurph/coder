@@ -66,6 +66,10 @@ class TextEditor(object):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_title('Coder')
         self.window.set_default_size(800,1000)
+        try:
+            self.window.set_icon_from_file('data/icon.png')
+        except:
+            print "Error: Couldn't load icon"
         self.window.connect('delete-event',self.on_window_delete_event)
         self.window.connect('destroy',self.on_window_destroy)
         self.window.connect('key-press-event',self.on_window_key_press_event)
@@ -688,7 +692,7 @@ class Tab(object):
         langs = {'py':'python','glade':'xml','pl':'perl'}
         style_scheme_manager = gtksourceview2.style_scheme_manager_get_default()
         cur_path = os.path.abspath(sys.path[0])
-        styles_path = os.path.join(cur_path,'styles')
+        styles_path = os.path.join(cur_path,'data')
         scheme = None
         if os.path.exists(styles_path):
             style_scheme_manager.prepend_search_path(styles_path)

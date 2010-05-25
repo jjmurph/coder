@@ -9,8 +9,8 @@
   <color name="green"                       value="#00B82E"/>
   <color name="light_green"                 value="#C2FFA8"/>
   <color name="red"                         value="#FF0000"/>
-  <color name="blue"                        value="#A8EEFF"/>  
-  
+  <color name="blue"                        value="#A8EEFF"/>
+
   <style name="text"                        foreground="white" background="dark"/>
   <style name="selection"                   background="grey"/>
   <style name="cursor"                      foreground="white"/>
