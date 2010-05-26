@@ -67,7 +67,9 @@ class TextEditor(object):
         self.window.set_title('Coder')
         self.window.set_default_size(800,1000)
         try:
-            self.window.set_icon_from_file('data/icon.png')
+            cur_path = os.path.abspath(sys.path[0])
+            icon_filename = os.path.join(cur_path,'data/icon.png')
+            self.window.set_icon_from_file(icon_filename)
         except:
             print "Error: Couldn't load icon"
         self.window.connect('delete-event',self.on_window_delete_event)
