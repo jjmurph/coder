@@ -168,6 +168,27 @@ class TextEditor(object):
         item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
         item.connect('activate',self.on_menu_item_comment_activate)
         menu.append(item)
+        item = gtk.ImageMenuItem('Toggle Mark')
+        image = gtk.image_new_from_stock(gtk.STOCK_REMOVE,gtk.ICON_SIZE_MENU)
+        item.set_image(image)
+        key, mod = gtk.accelerator_parse('<Ctrl><Alt>M')
+        item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
+        item.connect('activate',self.on_menu_item_toggle_mark_activate)
+        menu.append(item)
+        item = gtk.ImageMenuItem('Prev Mark')
+        image = gtk.image_new_from_stock(gtk.STOCK_REMOVE,gtk.ICON_SIZE_MENU)
+        item.set_image(image)
+        key, mod = gtk.accelerator_parse('<Ctrl><Shift>M')
+        item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
+        item.connect('activate',self.on_menu_item_prev_mark_activate)
+        menu.append(item)
+        item = gtk.ImageMenuItem('Next Mark')
+        image = gtk.image_new_from_stock(gtk.STOCK_REMOVE,gtk.ICON_SIZE_MENU)
+        item.set_image(image)
+        key, mod = gtk.accelerator_parse('<Ctrl>M')
+        item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
+        item.connect('activate',self.on_menu_item_next_mark_activate)
+        menu.append(item)
         menu_item.set_submenu(menu)
         menubar.add(menu_item)
 
@@ -514,7 +535,22 @@ class TextEditor(object):
         if self.tabs:
             tab = self.current_tab()
             tab.comment()
-         
+
+    def on_menu_item_toggle_mark_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            tab.toggle_mark()
+
+    def on_menu_item_prev_mark_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            tab.prev_mark()
+
+    def on_menu_item_next_mark_activate(self,widget,data=None):
+        if self.tabs:
+            tab = self.current_tab()
+            tab.next_mark()
+
     ### notebook signal handlers ###
 
     def on_notebook_switch_page(self,widget,data=None,new_page_num=None):
@@ -714,6 +750,7 @@ class Tab(object):
         self.line = 0
         self.col = 0
         self.create_widgets()
+        self.marks = []
         self.notebook.append_page(self.window,self.label)
         self.window.show()
         self.textview.show()
@@ -973,6 +1010,49 @@ class Tab(object):
 
     def focus(self):
         self.textview.grab_focus()
+
+    def toggle_mark(self):
+        removed = False
+        for i in xrange(len(self.marks)):
+            if self.line == self.marks[i]:
+                del(self.marks[i])
+                removed = True
+                break
+        if not removed:
+            added = False
+            for i in xrange(len(self.marks)):
+                if self.line < self.marks[i]:
+                    self.marks.insert(i,self.line)
+                    added = True
+                    break
+            if not added:
+                self.marks.append(self.line)
+
+    def next_mark(self):
+        mark = None
+        for i in xrange(len(self.marks)):
+            if self.line < self.marks[i]:
+                mark = self.marks[i]
+                break
+        if self.marks and mark is None:
+            mark = self.marks[0]
+        if mark is not None:
+            iter = self.textbuffer.get_iter_at_line(mark)
+            self.textbuffer.place_cursor(iter)
+            self.textview.scroll_to_iter(iter,0.1)
+
+    def prev_mark(self):
+        mark = None
+        for i in xrange(len(self.marks)-1,-1,-1):
+            if self.line > self.marks[i]:
+                mark = self.marks[i]
+                break
+        if self.marks and mark is None:
+            mark = self.marks[-1]
+        if mark is not None:
+            iter = self.textbuffer.get_iter_at_line(mark)
+            self.textbuffer.place_cursor(iter)
+            self.textview.scroll_to_iter(iter,0.1)
 
 def main(filenames=[]):
     '''
