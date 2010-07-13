@@ -37,15 +37,15 @@ try:
 except ImportError:
     SOURCE_VIEW = 0
 
+MAIN_PATH = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),os.pardir,os.pardir))
+
 def main(filenames=[]):
     '''
     Creates the Text Editor object and starts GTK.
     Accepts an optional list of filenames to pass to the Text Editor
     '''
     from editor import TextEditor
-
     editor = TextEditor(filenames)
-    editor.window.show()
     gtk.main()
 
 if __name__ == "__main__":
