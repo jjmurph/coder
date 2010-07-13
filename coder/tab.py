@@ -33,11 +33,8 @@ class Tab(object):
         source_language_manager = gtksourceview2.language_manager_get_default()
         langs = {'py':'python','glade':'xml','pl':'perl'}
         style_scheme_manager = gtksourceview2.style_scheme_manager_get_default()
-        #cur_path = os.path.abspath(sys.path[0])
-        #main_path = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]), os.pardir, os.pardir))
         styles_path = os.path.join(MAIN_PATH,'data')
         scheme = None
-        #print styles_path
         if os.path.exists(styles_path):
             style_scheme_manager.prepend_search_path(styles_path)
             style = 'coder'
