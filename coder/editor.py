@@ -21,11 +21,11 @@ import os
 import subprocess
 import re
 import gtk
-import gtksourceview2
-
-from tab import Tab
-from coder import MAIN_PATH
+from coder import SOURCE_VIEW,MAIN_PATH
+if SOURCE_VIEW:
+    import gtksourceview2
 import menus
+from tab import Tab
 
 class TextEditor(object):
     '''
@@ -599,5 +599,4 @@ class TextEditor(object):
             ok_to_overwrite = True
         dialog.destroy()
         return ok_to_overwrite
-
 
