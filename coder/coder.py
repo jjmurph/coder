@@ -51,3 +51,4 @@ def main(filenames=[]):
 if __name__ == "__main__":
     filenames = sys.argv[1:]
     main(filenames)
+
