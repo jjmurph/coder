@@ -125,6 +125,13 @@ def build_main_menu(editor,accelgroup=None):
     item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
     item.connect('activate',lambda w:editor.next_mark())
     menu.append(item)
+    item = gtk.ImageMenuItem('Convert Line Endings')
+    image = gtk.image_new_from_stock(gtk.STOCK_REMOVE,gtk.ICON_SIZE_MENU)
+    item.set_image(image)
+    #key, mod = gtk.accelerator_parse('<Ctrl>M')
+    #item.add_accelerator('activate',accelgroup,key,mod,gtk.ACCEL_VISIBLE)
+    item.connect('activate',lambda w:editor.convert_line_endings())
+    menu.append(item)
     menu_item.set_submenu(menu)
     menubar.add(menu_item)
     

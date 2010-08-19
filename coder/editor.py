@@ -525,7 +525,7 @@ class TextEditor(object):
     def load_file(self,filename):
         new_file = False
         try:
-            f = open(filename,'r')
+            f = open(filename,'rb')
             text = f.read()
             f.close()
         except IOError as e:
@@ -540,6 +540,7 @@ class TextEditor(object):
         textbuffer.place_cursor(start)
         textview.set_sensitive(True)
         tab.set_filename(filename)
+        tab.set_format()
         textbuffer.set_modified(new_file)
         tab.update_statusbar()
         tab.focus()
@@ -553,7 +554,7 @@ class TextEditor(object):
             end = textbuffer.get_end_iter()
             text = textbuffer.get_text(start,end)
             try:
-                f = open(filename,'w')
+                f = open(filename,'wb')
                 f.write(text)
                 f.close()
                 textbuffer.set_modified(False)
@@ -561,6 +562,11 @@ class TextEditor(object):
                 tab.update_statusbar()
             except IOError as e:
                 print("Error saving file %s" % filename)
+
+    def convert_line_endings(self):
+        if self.tabs:
+            tab = self.current_tab()
+            tab.convert_line_endings()
 
     def close_tab(self):
         if self.tabs:

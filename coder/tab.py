@@ -52,6 +52,7 @@ class Tab(object):
         self.changed = 0
         self.line = 0
         self.col = 0
+        self.line_endings = 'unix'
         self.create_widgets()
         self.marks = []
         self.notebook.append_page(self.window,self.label)
@@ -100,6 +101,13 @@ class Tab(object):
         self.label.set_text(os.path.basename(filename))
         self.notebook.set_tab_label(self.window,self.label)
         self.update_source_buffer(filename)
+
+    def set_format(self):
+        buf = self.textbuffer
+        text = buf.get_text(buf.get_start_iter(),buf.get_end_iter())
+        self.line_endings = 'unix'
+        if '\r\n' in text:
+            self.line_endings = 'dos'
 
     def get_current_folder(self):
         if self.filename:
@@ -284,10 +292,12 @@ class Tab(object):
             self.update_statusbar()
 
     def update_statusbar(self):
-        status = '%s       Line: %s  Col: %s' % (self.filename,self.line+1,self.col+1)
+        status = '%s [%s]      Line: %s  Col: %s' % (self.filename,
+                                                     self.line_endings,
+                                                     self.line+1,self.col+1)
         context_id = self.statusbar.get_context_id("status")
         self.statusbar.pop(context_id)
-        self.statusbar.push(context_id,status)        
+        self.statusbar.push(context_id,status)
 
     def buffer_modified_changed(self,widget):
         if self.changed:
@@ -356,4 +366,20 @@ class Tab(object):
             iter = self.textbuffer.get_iter_at_line(mark)
             self.textbuffer.place_cursor(iter)
             self.textview.scroll_to_iter(iter,0.1)
+
+    def convert_line_endings(self):
+        buf = self.textbuffer
+        self.textview.set_sensitive(False)
+        text = buf.get_text(buf.get_start_iter(),buf.get_end_iter())
+        if self.line_endings == 'dos':
+            text = text.replace('\r\n','\n')
+            self.line_endings = 'unix'
+        else:
+            text = text.replace('\n','\r\n')
+            self.line_endings = 'dos'
+        buf.set_text(text)
+        buf.set_modified(True)
+        self.update_statusbar()
+        self.textview.set_sensitive(True)
+
 
